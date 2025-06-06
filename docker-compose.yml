@@ -1,0 +1,27 @@
+version: '3.8' 
+ 
+services: 
+  app: 
+    build: . 
+    ports: 
+      - "8000:8000" 
+    depends_on: 
+      - postgres 
+      - redis 
+    environment: 
+      - DATABASE_URL=postgresql://mkprocessor:password@postgres:5432/mkprocessor 
+      - REDIS_URL=redis://redis:6379 
+ 
+  postgres: 
+    image: postgres:15 
+    environment: 
+      - POSTGRES_USER=mkprocessor 
+      - POSTGRES_PASSWORD=password 
+      - POSTGRES_DB=mkprocessor 
+    ports: 
+      - "5432:5432" 
+ 
+  redis: 
+    image: redis:7-alpine 
+    ports: 
+      - "6379:6379" 
