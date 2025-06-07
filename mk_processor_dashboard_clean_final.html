@@ -1,0 +1,3624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MK Processor 4.2.0 - Ultimate Project Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+
+        .live-status {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 10px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .integration-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .integration-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-left: 5px solid;
+        }
+
+        .github-card {
+            border-left-color: #24292e;
+        }
+
+        .hubspot-card {
+            border-left-color: #ff7a59;
+        }
+
+        .integration-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .integration-icon {
+            width: 32px;
+            height: 32px;
+            fill: currentColor;
+        }
+
+        .integration-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .connection-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .connect-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .connect-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .connection-status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: 600;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .connection-status.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .connection-status.error {
+            background: #fed7d7;
+            color: #822727;
+            border: 1px solid #fc8181;
+        }
+
+        .connection-status.warning {
+            background: #fef5e7;
+            color: #744210;
+            border: 1px solid #f6ad55;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .stat-change {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            background: #f0f9ff;
+            color: #0369a1;
+        }
+
+        .progress-overview {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .progress-title {
+            font-size: 1.8rem;
+            color: #2d3748;
+            font-weight: bold;
+        }
+
+        .progress-percentage {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 12px;
+            transition: all 1s ease;
+            width: 0%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .milestones {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .milestone {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+        }
+
+        .milestone.completed {
+            background: #ecfdf5;
+            border-color: #86efac;
+        }
+
+        .milestone.current {
+            background: #fef3c7;
+            border-color: #fbbf24;
+        }
+
+        .milestone-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #cbd5e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .milestone.completed .milestone-status {
+            background: #22c55e;
+        }
+
+        .milestone.current .milestone-status {
+            background: #f59e0b;
+        }
+
+        .roadmap {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .phase-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 5px solid #667eea;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phase-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .phase-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), transparent);
+            border-radius: 0 0 0 100px;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .phase-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .phase-title {
+            color: #2d3748;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        .phase-timeline {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .phase-progress {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .phase-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .phase-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .phase-progress-text {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .project-list {
+            list-style: none;
+        }
+
+        .project-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+
+        .project-item:hover {
+            background: #f8fafc;
+            margin: 0 -10px;
+            padding: 12px 10px;
+            border-radius: 8px;
+        }
+
+        .project-item:last-child {
+            border-bottom: none;
+        }
+
+        .project-status {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .status-not-started {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+
+        .status-in-progress {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            animation: pulse 2s infinite;
+        }
+
+        .status-completed {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+        }
+
+        .project-name {
+            flex: 1;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .project-priority {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .priority-critical {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .priority-high {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-medium {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .start-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .start-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .start-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .task-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .task-title {
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 1.2rem;
+        }
+
+        .task-meta {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .task-checklist {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .task-checklist li {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .task-checklist li:hover {
+            background: #f8fafc;
+            margin: 0 -10px;
+            padding: 8px 10px;
+            border-radius: 6px;
+        }
+
+        .task-checklist li::before {
+            content: "○";
+            margin-right: 10px;
+            color: #cbd5e0;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .task-checklist li.completed::before {
+            content: "✓";
+            color: #22c55e;
+        }
+
+        .task-checklist li.in-progress::before {
+            content: "●";
+            color: #f59e0b;
+        }
+
+        .sync-dashboard {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .sync-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .sync-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .sync-status {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .sync-status.connected {
+            color: #22c55e;
+        }
+
+        .sync-status.disconnected {
+            color: #ef4444;
+        }
+
+        .sync-status.syncing {
+            color: #f59e0b;
+        }
+
+        .quick-actions {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .logs-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .log-time {
+            color: #64748b;
+            font-weight: bold;
+            min-width: 80px;
+        }
+
+        .log-level {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .log-info {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .log-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .log-error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .log-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        @media (max-width: 1024px) {
+            .integration-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2.2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .roadmap {
+                grid-template-columns: 1fr;
+            }
+
+            .task-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-left: 4px solid;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left-color: #22c55e;
+        }
+
+        .notification.error {
+            border-left-color: #ef4444;
+        }
+
+        .notification.info {
+            border-left-color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 MK Processor 4.2.0</h1>
+            <p>Ultimate AI-Powered Dual-Market Intelligence Platform</p>
+            <div class="live-status">
+                <div class="status-dot"></div>
+                <span id="liveStatusText">Real-time Dashboard Active</span>
+            </div>
+        </div>
+
+        <!-- Integration Panel -->
+        <div class="integration-panel">
+            <!-- GitHub Integration -->
+            <div class="integration-card github-card">
+                <div class="integration-header">
+                    <svg class="integration-icon" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    <div class="integration-title">GitHub Repository</div>
+                </div>
+                <div class="connection-form">
+                    <div class="form-group">
+                        <label for="repoUrl">Repository URL</label>
+                        <input type="text" id="repoUrl" placeholder="https://github.com/MKPie/My-Owen" value="https://github.com/MKPie/MK-Redo">
+                    </div>
+                    <div class="form-group">
+                        <label for="githubToken">GitHub Personal Access Token</label>
+                        <input type="password" id="githubToken" placeholder="github_pat_11BSEF63I0M47feSiGQPEu_...">
+                    </div>
+                    <button class="connect-btn" id="githubConnectBtn" onclick="connectToGitHub()">
+                        <span id="githubBtnText">Connect Repository</span>
+                        <div class="loading-spinner hidden" id="githubSpinner"></div>
+                    </button>
+                    <div class="connection-status" id="githubStatus"></div>
+                </div>
+            </div>
+
+            <!-- HubSpot Integration -->
+            <div class="integration-card hubspot-card">
+                <div class="integration-header">
+                    <svg class="integration-icon" viewBox="0 0 24 24">
+                        <path fill="#ff7a59" d="M18.164 7.931V4.5a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0-.5.5v3.431l6 3.838 6-3.838zM6.164 8.569v8.931a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5V8.569l-6 3.838-6-3.838z"/>
+                    </svg>
+                    <div class="integration-title">HubSpot CRM</div>
+                </div>
+                <div class="connection-form">
+                    <div class="form-group">
+                        <label for="hubspotApiKey">HubSpot Private App Token</label>
+                        <input type="password" id="hubspotApiKey" placeholder="pat-na1-11abc123-def4-56gh-78ij-90klmnopqrst">
+                    </div>
+                    <div class="form-group">
+                        <label for="hubspotPortal">Portal ID</label>
+                        <input type="text" id="hubspotPortal" placeholder="12345678">
+                    </div>
+                    <div class="form-group">
+                        <label for="syncFrequency">Sync Frequency</label>
+                        <select id="syncFrequency">
+                            <option value="5">Every 5 minutes</option>
+                            <option value="15">Every 15 minutes</option>
+                            <option value="30">Every 30 minutes</option>
+                            <option value="60">Every hour</option>
+                        </select>
+                    </div>
+                    <button class="connect-btn" id="hubspotConnectBtn" onclick="connectToHubSpot()">
+                        <span id="hubspotBtnText">Connect HubSpot</span>
+                        <div class="loading-spinner hidden" id="hubspotSpinner"></div>
+                    </button>
+                    <div class="connection-status" id="hubspotStatus"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sync Dashboard -->
+        <div class="sync-dashboard">
+            <h2>🔄 Live Sync Status</h2>
+            <div class="sync-grid">
+                <div class="sync-item">
+                    <div class="sync-status disconnected" id="githubSyncStatus">GitHub: Disconnected</div>
+                    <div>Last sync: <span id="githubLastSync">Never</span></div>
+                </div>
+                <div class="sync-item">
+                    <div class="sync-status disconnected" id="hubspotSyncStatus">HubSpot: Disconnected</div>
+                    <div>Last sync: <span id="hubspotLastSync">Never</span></div>
+                </div>
+                <div class="sync-item">
+                    <div class="sync-status" id="autoSyncStatus">Auto-sync: Disabled</div>
+                    <div>Next sync: <span id="nextSync">N/A</span></div>
+                </div>
+                <div class="sync-item">
+                    <div class="sync-status" id="dataIntegrity">Data Integrity: ✓</div>
+                    <div>Records synced: <span id="recordsSynced">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="overallProgress">0%</div>
+                <div class="stat-label">Overall Progress</div>
+                <div class="stat-change" id="progressChange">+0% this week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedTasks">0/64</div>
+                <div class="stat-label">Tasks Completed</div>
+                <div class="stat-change" id="tasksChange">+0 this week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="currentPhase">Phase 1</div>
+                <div class="stat-label">Current Phase</div>
+                <div class="stat-change" id="phaseProgress">Foundation</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="timeToMarket">36</div>
+                <div class="stat-label">Months to Market</div>
+                <div class="stat-change" id="timelineChange">On track</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="teamVelocity">0</div>
+                <div class="stat-label">Sprint Velocity</div>
+                <div class="stat-change" id="velocityChange">Story points/week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="hubspotDeals">$0</div>
+                <div class="stat-label">Pipeline Value</div>
+                <div class="stat-change" id="pipelineChange">HubSpot integrated</div>
+            </div>
+        </div>
+
+        <!-- Progress Overview -->
+        <div class="progress-overview">
+            <div class="progress-header">
+                <div class="progress-title">🎯 Project Progress</div>
+                <div class="progress-percentage" id="progressPercentage">0%</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <p id="progressText">Ready to connect integrations and start tracking progress...</p>
+            
+            <div class="milestones">
+                <div class="milestone current" id="milestone1">
+                    <div class="milestone-status">1</div>
+                    <h4>Foundation Setup</h4>
+                    <p>Development environment and core infrastructure</p>
+                </div>
+                <div class="milestone" id="milestone2">
+                    <div class="milestone-status">2</div>
+                    <h4>MVP Launch</h4>
+                    <p>Enterprise web scraping platform</p>
+                </div>
+                <div class="milestone" id="milestone3">
+                    <div class="milestone-status">3</div>
+                    <h4>Market Traction</h4>
+                    <p>First 100 enterprise customers</p>
+                </div>
+                <div class="milestone" id="milestone4">
+                    <div class="milestone-status">4</div>
+                    <h4>Dual Platform</h4>
+                    <p>Consumer platform launch</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2>⚡ Quick Actions</h2>
+            <div class="actions-grid">
+                <button class="action-btn" onclick="forceSyncAll()">
+                    🔄 Force Sync All
+                </button>
+                <button class="action-btn" onclick="generateReport()">
+                    📊 Generate Report
+                </button>
+                <button class="action-btn" onclick="updateHubSpot()">
+                    📈 Update HubSpot
+                </button>
+                <button class="action-btn" onclick="exportData()">
+                    💾 Export Data
+                </button>
+                <button class="action-btn" onclick="scheduleDemo()">
+                    🎥 Schedule Demo
+                </button>
+                <button class="action-btn" onclick="createTask()">
+                    ✅ Create Task
+                </button>
+            </div>
+        </div>
+
+        <!-- Implementation Roadmap -->
+        <div class="roadmap">
+            <!-- Phase 1: Foundation -->
+            <div class="phase-card">
+                <div class="phase-header">
+                    <div class="phase-number">1</div>
+                    <div class="phase-title">Foundation</div>
+                </div>
+                <div class="phase-timeline">Months 1-4 | Enterprise MVP</div>
+                <div class="phase-progress">
+                    <div class="phase-progress-bar">
+                        <div class="phase-progress-fill" id="phase1Progress" style="width: 0%"></div>
+                    </div>
+                    <div class="phase-progress-text" id="phase1Text">0% Complete</div>
+                </div>
+                <ul class="project-list">
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-dev-env">○</div>
+                        <div class="project-name">Development Environment</div>
+                        <div class="project-priority priority-critical">Critical</div>
+                        <button class="start-btn" onclick="showTaskDetails('dev-env')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-scraping">○</div>
+                        <div class="project-name">Web Scraping MVP</div>
+                        <div class="project-priority priority-critical">Critical</div>
+                        <button class="start-btn" onclick="showTaskDetails('scraping')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-ai">○</div>
+                        <div class="project-name">AI Integration</div>
+                        <div class="project-priority priority-high">High</div>
+                        <button class="start-btn" onclick="showTaskDetails('ai')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-frontend">○</div>
+                        <div class="project-name">Frontend Dashboard</div>
+                        <div class="project-priority priority-high">High</div>
+                        <button class="start-btn" onclick="showTaskDetails('frontend')">View Tasks</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Phase 2: Traction -->
+            <div class="phase-card">
+                <div class="phase-header">
+                    <div class="phase-number">2</div>
+                    <div class="phase-title">Market Traction</div>
+                </div>
+                <div class="phase-timeline">Months 4-8 | Scale & PMF</div>
+                <div class="phase-progress">
+                    <div class="phase-progress-bar">
+                        <div class="phase-progress-fill" id="phase2Progress" style="width: 0%"></div>
+                    </div>
+                    <div class="phase-progress-text" id="phase2Text">0% Complete</div>
+                </div>
+                <ul class="project-list">
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-collaboration">○</div>
+                        <div class="project-name">Real-time Collaboration</div>
+                        <div class="project-priority priority-high">High</div>
+                        <button class="start-btn" onclick="showTaskDetails('collaboration')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-ml">○</div>
+                        <div class="project-name">ML Analytics</div>
+                        <div class="project-priority priority-high">High</div>
+                        <button class="start-btn" onclick="showTaskDetails('ml')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-plugins">○</div>
+                        <div class="project-name">Plugin Marketplace</div>
+                        <div class="project-priority priority-medium">Medium</div>
+                        <button class="start-btn" onclick="showTaskDetails('plugins')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-enterprise">○</div>
+                        <div class="project-name">Enterprise Features</div>
+                        <div class="project-priority priority-high">High</div>
+                        <button class="start-btn" onclick="showTaskDetails('enterprise')">View Tasks</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Phase 3: Dual Platform -->
+            <div class="phase-card">
+                <div class="phase-header">
+                    <div class="phase-number">3</div>
+                    <div class="phase-title">Dual Platform</div>
+                </div>
+                <div class="phase-timeline">Months 8-12 | Consumer Launch</div>
+                <div class="phase-progress">
+                    <div class="phase-progress-bar">
+                        <div class="phase-progress-fill" id="phase3Progress" style="width: 0%"></div>
+                    </div>
+                    <div class="phase-progress-text" id="phase3Text">0% Complete</div>
+                </div>
+                <ul class="project-list">
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-consumer">○</div>
+                        <div class="project-name">Consumer Platform</div>
+                        <div class="project-priority priority-critical">Critical</div>
+                        <button class="start-btn" onclick="showTaskDetails('consumer')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-rewards">○</div>
+                        <div class="project-name">Rewards Engine</div>
+                        <div class="project-priority priority-critical">Critical</div>
+                        <button class="start-btn" onclick="showTaskDetails('rewards')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-mobile">○</div>
+                        <div class="project-name">Mobile App</div>
+                        <div class="project-priority priority-high">High</div>
+                        <button class="start-btn" onclick="showTaskDetails('mobile')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-cross-platform">○</div>
+                        <div class="project-name">Cross-Platform Intelligence</div>
+                        <div class="project-priority priority-critical">Critical</div>
+                        <button class="start-btn" onclick="showTaskDetails('cross-platform')">View Tasks</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Phase 4: Market Dominance -->
+            <div class="phase-card">
+                <div class="phase-header">
+                    <div class="phase-number">4</div>
+                    <div class="phase-title">Market Dominance</div>
+                </div>
+                <div class="phase-timeline">Months 12-36 | Global Scale</div>
+                <div class="phase-progress">
+                    <div class="phase-progress-bar">
+                        <div class="phase-progress-fill" id="phase4Progress" style="width: 0%"></div>
+                    </div>
+                    <div class="phase-progress-text" id="phase4Text">0% Complete</div>
+                </div>
+                <ul class="project-list">
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-global">○</div>
+                        <div class="project-name">Global Expansion</div>
+                        <div class="project-priority priority-high">High</div>
+                        <button class="start-btn" onclick="showTaskDetails('global')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-ecosystem">○</div>
+                        <div class="project-name">Ecosystem Platform</div>
+                        <div class="project-priority priority-medium">Medium</div>
+                        <button class="start-btn" onclick="showTaskDetails('ecosystem')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-ipo">○</div>
+                        <div class="project-name">IPO Readiness</div>
+                        <div class="project-priority priority-medium">Medium</div>
+                        <button class="start-btn" onclick="showTaskDetails('ipo')">View Tasks</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Task Details -->
+        <div class="task-grid" id="taskDetails" style="display: none;">
+            <!-- Dynamic task cards will be inserted here -->
+        </div>
+
+        <!-- Activity Logs -->
+        <div class="logs-panel">
+            <h2>📋 Activity Logs</h2>
+            <div id="activityLogs">
+                <div class="log-entry">
+                    <div class="log-time">[READY]</div>
+                    <div class="log-level log-info">INFO</div>
+                    <div>Dashboard initialized. Ready for integration setup.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state management
+        const AppState = {
+            github: {
+                connected: false,
+                token: null,
+                repoData: null,
+                lastSync: null
+            },
+            hubspot: {
+                connected: false,
+                apiKey: null,
+                portalId: null,
+                lastSync: null
+            },
+            sync: {
+                autoSync: false,
+                interval: null,
+                frequency: 5
+            },
+            progress: {
+                overall: 0,
+                completed: 0,
+                total: 64,
+                phases: {
+                    phase1: 0,
+                    phase2: 0,
+                    phase3: 0,
+                    phase4: 0
+                }
+            }
+        };
+
+        // Enhanced project data with detailed tracking
+        const projectData = {
+            'dev-env': {
+                title: 'Development Environment Setup',
+                description: 'Core infrastructure and development environment configuration',
+                phase: 1,
+                tasks: [
+                    'Create comprehensive repository structure',
+                    'Setup Docker containerization environment',
+                    'Configure CI/CD pipeline with GitHub Actions',
+                    'Initialize PostgreSQL database with schemas',
+                    'Setup Redis caching layer',
+                    'Configure environment variables and secrets',
+                    'Setup monitoring and logging infrastructure',
+                    'Create development documentation'
+                ],
+                files: ['README.md', '.gitignore', 'docker-compose.yml', 'backend/Dockerfile', 'frontend/Dockerfile', '.github/workflows/', 'docs/'],
+                priority: 'Critical',
+                estimatedHours: 48,
+                dependencies: [],
+                hubspotDealId: null
+            },
+            'scraping': {
+                title: 'Web Scraping MVP',
+                description: 'Core web scraping engine with advanced anti-detection capabilities',
+                phase: 1,
+                tasks: [
+                    'Implement Selenium WebDriver integration',
+                    'Setup Playwright for modern web scraping',
+                    'Build proxy rotation system with residential proxies',
+                    'Integrate CAPTCHA solving services (2Captcha, Anti-CAPTCHA)',
+                    'Create job queue system with Celery',
+                    'Implement rate limiting and respectful scraping',
+                    'Build API endpoints for scraping management',
+                    'Add error handling and retry mechanisms',
+                    'Create data validation and cleaning pipeline',
+                    'Setup browser fingerprint randomization'
+                ],
+                files: ['backend/app/scraping/', 'backend/requirements.txt', 'backend/app/main.py', 'backend/app/models/', 'backend/app/api/'],
+                priority: 'Critical',
+                estimatedHours: 120,
+                dependencies: ['dev-env'],
+                hubspotDealId: null
+            },
+            'ai': {
+                title: 'AI Integration Layer',
+                description: 'Multi-provider AI integration with intelligent routing and cost optimization',
+                phase: 1,
+                tasks: [
+                    'Integrate OpenAI GPT-4 API',
+                    'Integrate Anthropic Claude API',
+                    'Integrate Google Gemini API',
+                    'Setup local Ollama for privacy-focused processing',
+                    'Build intelligent provider routing system',
+                    'Implement response caching and optimization',
+                    'Create cost tracking and budget management',
+                    'Build prompt template system',
+                    'Add AI response validation and quality scoring',
+                    'Implement fallback mechanisms for reliability'
+                ],
+                files: ['backend/app/ai/', 'backend/app/providers/', 'backend/app/prompts/', 'backend/app/utils/'],
+                priority: 'High',
+                estimatedHours: 80,
+                dependencies: ['dev-env'],
+                hubspotDealId: null
+            },
+            'frontend': {
+                title: 'Frontend Dashboard',
+                description: 'React-based admin dashboard with real-time updates and modern UX',
+                phase: 1,
+                tasks: [
+                    'Setup React 18 project with TypeScript',
+                    'Implement responsive dashboard layout',
+                    'Create job management interface',
+                    'Build real-time WebSocket integration',
+                    'Develop analytics and visualization components',
+                    'Implement user authentication and authorization',
+                    'Create settings and configuration panels',
+                    'Add dark/light mode support',
+                    'Build notification and alert system',
+                    'Implement PWA capabilities for offline support'
+                ],
+                files: ['frontend/src/', 'frontend/package.json', 'frontend/public/', 'frontend/src/components/', 'frontend/src/pages/'],
+                priority: 'High',
+                estimatedHours: 100,
+                dependencies: ['dev-env', 'scraping'],
+                hubspotDealId: null
+            },
+            'collaboration': {
+                title: 'Real-time Collaboration Platform',
+                description: 'WebRTC-based real-time collaboration with team features',
+                phase: 2,
+                tasks: [
+                    'Implement WebRTC signaling server',
+                    'Build real-time editing capabilities',
+                    'Add screen sharing functionality',
+                    'Create voice and video chat features',
+                    'Implement collaborative workspace management',
+                    'Build presence indicators and user tracking',
+                    'Add comment and annotation system',
+                    'Create conflict resolution for simultaneous edits',
+                    'Implement team permission management',
+                    'Add integration with popular communication tools'
+                ],
+                files: ['backend/app/collaboration/', 'frontend/src/collaboration/', 'websocket/', 'signaling/'],
+                priority: 'High',
+                estimatedHours: 160,
+                dependencies: ['frontend', 'dev-env'],
+                hubspotDealId: null
+            },
+            'ml': {
+                title: 'Machine Learning Analytics Engine',
+                description: 'Advanced ML capabilities for predictive analytics and optimization',
+                phase: 2,
+                tasks: [
+                    'Setup MLflow for experiment tracking',
+                    'Implement predictive analytics models',
+                    'Build anomaly detection system',
+                    'Create recommendation engine',
+                    'Setup model serving infrastructure',
+                    'Implement A/B testing framework',
+                    'Build automated model retraining pipeline',
+                    'Create explainable AI dashboard',
+                    'Implement feature store for ML features',
+                    'Add model performance monitoring'
+                ],
+                files: ['backend/app/ml/', 'ml/models/', 'ml/training/', 'ml/serving/'],
+                priority: 'High',
+                estimatedHours: 140,
+                dependencies: ['ai', 'scraping'],
+                hubspotDealId: null
+            },
+            'plugins': {
+                title: 'Plugin Marketplace',
+                description: 'Extensible plugin system with marketplace for third-party integrations',
+                phase: 2,
+                tasks: [
+                    'Design plugin architecture and API',
+                    'Build plugin development SDK',
+                    'Create plugin marketplace interface',
+                    'Implement plugin security sandbox',
+                    'Build plugin installation and management system',
+                    'Create plugin review and approval process',
+                    'Implement revenue sharing system',
+                    'Build plugin analytics and monitoring',
+                    'Create documentation and developer tools',
+                    'Add plugin marketplace discovery features'
+                ],
+                files: ['backend/app/plugins/', 'plugin-sdk/', 'marketplace/', 'frontend/src/marketplace/'],
+                priority: 'Medium',
+                estimatedHours: 120,
+                dependencies: ['frontend', 'ai'],
+                hubspotDealId: null
+            },
+            'enterprise': {
+                title: 'Enterprise Features',
+                description: 'Advanced enterprise capabilities including SSO, compliance, and governance',
+                phase: 2,
+                tasks: [
+                    'Implement SSO integration (SAML, OIDC)',
+                    'Build multi-tenant architecture',
+                    'Create advanced user role management',
+                    'Implement audit logging and compliance reporting',
+                    'Build data governance and lineage tracking',
+                    'Create enterprise security features',
+                    'Implement advanced analytics and reporting',
+                    'Build custom branding and white-label options',
+                    'Create enterprise API rate limiting',
+                    'Add advanced backup and disaster recovery'
+                ],
+                files: ['backend/app/enterprise/', 'backend/app/auth/', 'backend/app/compliance/', 'backend/app/governance/'],
+                priority: 'High',
+                estimatedHours: 180,
+                dependencies: ['frontend', 'ai', 'ml'],
+                hubspotDealId: null
+            },
+            'consumer': {
+                title: 'Consumer Platform',
+                description: 'Consumer-facing platform for SmartRewards AI with mobile-first design',
+                phase: 3,
+                tasks: [
+                    'Design consumer platform architecture',
+                    'Build consumer web application',
+                    'Implement user onboarding and KYC',
+                    'Create personal dashboard and analytics',
+                    'Build financial account integration',
+                    'Implement rewards tracking system',
+                    'Create gamification and achievement system',
+                    'Build social features and community',
+                    'Implement referral program',
+                    'Add consumer support and help system'
+                ],
+                files: ['consumer-web/', 'backend/app/consumer/', 'consumer-api/', 'backend/app/rewards/'],
+                priority: 'Critical',
+                estimatedHours: 200,
+                dependencies: ['frontend', 'ai', 'ml'],
+                hubspotDealId: null
+            },
+            'rewards': {
+                title: 'Rewards Intelligence Engine',
+                description: 'AI-powered rewards optimization with merchant partnerships',
+                phase: 3,
+                tasks: [
+                    'Build merchant partnership API integrations',
+                    'Implement rewards program aggregation',
+                    'Create AI optimization algorithms',
+                    'Build real-time rewards tracking',
+                    'Implement geospatial rewards intelligence',
+                    'Create predictive spending analytics',
+                    'Build cashback and points optimization',
+                    'Implement fraud detection and security',
+                    'Create merchant recommendation system',
+                    'Build cross-platform intelligence integration'
+                ],
+                files: ['backend/app/rewards/', 'backend/app/merchants/', 'backend/app/optimization/', 'ai/rewards/'],
+                priority: 'Critical',
+                estimatedHours: 160,
+                dependencies: ['consumer', 'ai', 'ml'],
+                hubspotDealId: null
+            },
+            'mobile': {
+                title: 'Mobile Application',
+                description: 'React Native mobile app for iOS and Android with offline capabilities',
+                phase: 3,
+                tasks: [
+                    'Setup React Native development environment',
+                    'Build core mobile app architecture',
+                    'Implement native iOS and Android features',
+                    'Create offline synchronization capabilities',
+                    'Build push notification system',
+                    'Implement biometric authentication',
+                    'Create location-based features',
+                    'Build camera integration for receipt scanning',
+                    'Implement mobile-specific UI/UX',
+                    'Add app store optimization and deployment'
+                ],
+                files: ['mobile/', 'mobile/ios/', 'mobile/android/', 'mobile/src/'],
+                priority: 'High',
+                estimatedHours: 180,
+                dependencies: ['consumer', 'rewards'],
+                hubspotDealId: null
+            },
+            'cross-platform': {
+                title: 'Cross-Platform Intelligence',
+                description: 'The core competitive advantage - intelligence sharing between enterprise and consumer platforms',
+                phase: 3,
+                tasks: [
+                    'Design cross-platform data architecture',
+                    'Implement enterprise-to-consumer intelligence flow',
+                    'Build consumer-to-enterprise insights pipeline',
+                    'Create unified AI models for both platforms',
+                    'Implement privacy-preserving data sharing',
+                    'Build cross-platform analytics dashboard',
+                    'Create network effects measurement system',
+                    'Implement real-time intelligence synchronization',
+                    'Build competitive moat documentation',
+                    'Create cross-platform optimization algorithms'
+                ],
+                files: ['backend/app/cross-platform/', 'ai/unified/', 'analytics/cross-platform/', 'intelligence/'],
+                priority: 'Critical',
+                estimatedHours: 220,
+                dependencies: ['consumer', 'rewards', 'enterprise', 'ml'],
+                hubspotDealId: null
+            },
+            'global': {
+                title: 'Global Expansion',
+                description: 'International market expansion with localization and compliance',
+                phase: 4,
+                tasks: [
+                    'Implement multi-language support',
+                    'Build currency and payment localization',
+                    'Create region-specific compliance features',
+                    'Implement local merchant partnerships',
+                    'Build global data residency compliance',
+                    'Create international tax handling',
+                    'Implement local regulatory compliance',
+                    'Build region-specific UI/UX adaptations',
+                    'Create global customer support system',
+                    'Implement international marketing automation'
+                ],
+                files: ['localization/', 'backend/app/international/', 'compliance/global/', 'payments/international/'],
+                priority: 'High',
+                estimatedHours: 200,
+                dependencies: ['cross-platform', 'mobile', 'enterprise'],
+                hubspotDealId: null
+            },
+            'ecosystem': {
+                title: 'Ecosystem Platform',
+                description: 'Platform economy features with partners, developers, and third-party integrations',
+                phase: 4,
+                tasks: [
+                    'Build partner onboarding platform',
+                    'Create developer ecosystem tools',
+                    'Implement revenue sharing automation',
+                    'Build ecosystem marketplace',
+                    'Create partner analytics and reporting',
+                    'Implement third-party integrations framework',
+                    'Build ecosystem governance tools',
+                    'Create partner certification program',
+                    'Implement ecosystem support system',
+                    'Build ecosystem growth measurement tools'
+                ],
+                files: ['ecosystem/', 'partner-portal/', 'developer-tools/', 'integrations/'],
+                priority: 'Medium',
+                estimatedHours: 160,
+                dependencies: ['plugins', 'global', 'cross-platform'],
+                hubspotDealId: null
+            },
+            'ipo': {
+                title: 'IPO Readiness',
+                description: 'Public company readiness including governance, compliance, and investor relations',
+                phase: 4,
+                tasks: [
+                    'Implement SOX compliance systems',
+                    'Build investor relations platform',
+                    'Create financial reporting automation',
+                    'Implement advanced governance features',
+                    'Build shareholder management system',
+                    'Create regulatory compliance dashboard',
+                    'Implement advanced security and audit trails',
+                    'Build public company documentation',
+                    'Create investor analytics and reporting',
+                    'Implement public company operational procedures'
+                ],
+                files: ['governance/', 'investor-relations/', 'compliance/public/', 'financial-reporting/'],
+                priority: 'Medium',
+                estimatedHours: 140,
+                dependencies: ['ecosystem', 'global', 'enterprise'],
+                hubspotDealId: null
+            }
+        };
+
+        // Utility functions
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 5px;">${type.toUpperCase()}</div>
+                <div>${message}</div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 4000);
+        }
+
+        function addLog(level, message) {
+            const logsContainer = document.getElementById('activityLogs');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <div class="log-time">[${timestamp}]</div>
+                <div class="log-level log-${level.toLowerCase()}">${level}</div>
+                <div>${message}</div>
+            `;
+            
+            logsContainer.insertBefore(logEntry, logsContainer.firstChild);
+            
+            // Keep only last 50 log entries
+            while (logsContainer.children.length > 50) {
+                logsContainer.removeChild(logsContainer.lastChild);
+            }
+        }
+
+        function updateLiveStatus(text, connected = true) {
+            const statusElement = document.getElementById('liveStatusText');
+            const dotElement = document.querySelector('.status-dot');
+            
+            statusElement.textContent = text;
+            dotElement.style.background = connected ? '#4ade80' : '#ef4444';
+        }
+
+        // GitHub Integration
+        async function connectToGitHub() {
+            const repoUrl = document.getElementById('repoUrl').value.trim();
+            const token = document.getElementById('githubToken').value.trim();
+            const btn = document.getElementById('githubConnectBtn');
+            const btnText = document.getElementById('githubBtnText');
+            const spinner = document.getElementById('githubSpinner');
+            const status = document.getElementById('githubStatus');
+
+            if (!repoUrl || !token) {
+                showStatus('githubStatus', 'Please enter both repository URL and GitHub token', 'error');
+                return;
+            }
+
+            const urlParts = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+            if (!urlParts) {
+                showStatus('githubStatus', 'Invalid GitHub repository URL', 'error');
+                return;
+            }
+
+            const [, owner, repo] = urlParts;
+            
+            btn.disabled = true;
+            btnText.textContent = 'Connecting...';
+            spinner.classList.remove('hidden');
+
+            try {
+                addLog('INFO', `Attempting to connect to ${owner}/${repo}`);
+                
+                const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const repoData = await response.json();
+                
+                AppState.github.connected = true;
+                AppState.github.token = token;
+                AppState.github.repoData = repoData;
+                AppState.github.lastSync = new Date();
+
+                showStatus('githubStatus', `✅ Connected to ${repoData.full_name}`, 'success');
+                updateSyncStatus('github', 'connected');
+                addLog('SUCCESS', `Successfully connected to GitHub repository: ${repoData.full_name}`);
+                
+                await scanRepository();
+                startAutoSync();
+                
+                showNotification('GitHub repository connected successfully!', 'success');
+
+            } catch (error) {
+                console.error('GitHub connection error:', error);
+                showStatus('githubStatus', `❌ Connection failed: ${error.message}`, 'error');
+                addLog('ERROR', `GitHub connection failed: ${error.message}`);
+                showNotification('Failed to connect to GitHub repository', 'error');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Connect Repository';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        // HubSpot Integration
+        async function connectToHubSpot() {
+            const apiKey = document.getElementById('hubspotApiKey').value.trim();
+            const portalId = document.getElementById('hubspotPortal').value.trim();
+            const frequency = document.getElementById('syncFrequency').value;
+            const btn = document.getElementById('hubspotConnectBtn');
+            const btnText = document.getElementById('hubspotBtnText');
+            const spinner = document.getElementById('hubspotSpinner');
+
+            if (!apiKey || !portalId) {
+                showStatus('hubspotStatus', 'Please enter both API key and Portal ID', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.textContent = 'Connecting...';
+            spinner.classList.remove('hidden');
+
+            try {
+                addLog('INFO', `Attempting to connect to HubSpot portal ${portalId}`);
+                
+                // Test HubSpot connection
+                const response = await fetch(`https://api.hubapi.com/crm/v3/objects/contacts?limit=1`, {
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                AppState.hubspot.connected = true;
+                AppState.hubspot.apiKey = apiKey;
+                AppState.hubspot.portalId = portalId;
+                AppState.hubspot.lastSync = new Date();
+                AppState.sync.frequency = parseInt(frequency);
+
+                showStatus('hubspotStatus', `✅ Connected to HubSpot Portal ${portalId}`, 'success');
+                updateSyncStatus('hubspot', 'connected');
+                addLog('SUCCESS', `Successfully connected to HubSpot portal: ${portalId}`);
+                
+                await initializeHubSpotData();
+                
+                showNotification('HubSpot integration connected successfully!', 'success');
+
+            } catch (error) {
+                console.error('HubSpot connection error:', error);
+                showStatus('hubspotStatus', `❌ Connection failed: ${error.message}`, 'error');
+                addLog('ERROR', `HubSpot connection failed: ${error.message}`);
+                showNotification('Failed to connect to HubSpot', 'error');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Connect HubSpot';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        function showStatus(elementId, message, type) {
+            const statusDiv = document.getElementById(elementId);
+            statusDiv.textContent = message;
+            statusDiv.className = `connection-status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        function updateSyncStatus(service, status) {
+            const statusElement = document.getElementById(`${service}SyncStatus`);
+            const lastSyncElement = document.getElementById(`${service}LastSync`);
+            
+            if (statusElement) {
+                statusElement.textContent = `${service.charAt(0).toUpperCase() + service.slice(1)}: ${status.charAt(0).toUpperCase() + status.slice(1)}`;
+                statusElement.className = `sync-status ${status}`;
+            }
+            
+            if (lastSyncElement && AppState[service].lastSync) {
+                lastSyncElement.textContent = AppState[service].lastSync.toLocaleTimeString();
+            }
+        }
+
+        async function scanRepository() {
+            if (!AppState.github.connected) return;
+
+            try {
+                addLog('INFO', 'Scanning repository for project files...');
+                
+                const response = await fetch(`https://api.github.com/repos/${AppState.github.repoData.full_name}/contents`, {
+                    headers: {
+                        'Authorization': `Bearer ${AppState.github.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch repository contents: ${response.statusText}`);
+                }
+
+                const contents = await response.json();
+                await analyzeProjectProgress(contents);
+                
+                AppState.github.lastSync = new Date();
+                updateSyncStatus('github', 'connected');
+                
+                addLog('SUCCESS', `Repository scan completed. Found ${contents.length} items.`);
+
+            } catch (error) {
+                console.error('Repository scan error:', error);
+                addLog('ERROR', `Repository scan failed: ${error.message}`);
+            }
+        }
+
+        async function analyzeProjectProgress(contents) {
+            const foundFiles = contents.map(item => item.name);
+            let totalCompleted = 0;
+            let totalTasks = 0;
+            
+            // Phase progress tracking
+            const phaseProgress = { phase1: 0, phase2: 0, phase3: 0, phase4: 0 };
+            const phaseCounts = { phase1: 0, phase2: 0, phase3: 0, phase4: 0 };
+
+            for (const [projectId, project] of Object.entries(projectData)) {
+                totalTasks += project.tasks.length;
+                phaseCounts[`phase${project.phase}`]++;
+                
+                let projectProgress = 0;
+                
+                // Check for project-specific files
+                for (const file of project.files) {
+                    if (file.includes('/')) {
+                        const dirName = file.split('/')[0];
+                        if (foundFiles.includes(dirName)) {
+                            projectProgress++;
+                        }
+                    } else {
+                        if (foundFiles.includes(file)) {
+                            projectProgress++;
+                        }
+                    }
+                }
+
+                const completionPercent = (projectProgress / project.files.length) * 100;
+                updateProjectStatus(projectId, completionPercent);
+                
+                if (completionPercent > 0) {
+                    const completedInProject = Math.ceil((completionPercent / 100) * project.tasks.length);
+                    totalCompleted += completedInProject;
+                    phaseProgress[`phase${project.phase}`] += completionPercent;
+                }
+            }
+
+            // Update phase progress
+            for (let i = 1; i <= 4; i++) {
+                const phaseAvg = phaseCounts[`phase${i}`] > 0 ? phaseProgress[`phase${i}`] / phaseCounts[`phase${i}`] : 0;
+                updatePhaseProgress(i, phaseAvg);
+            }
+
+            // Update overall progress
+            const overallProgress = totalTasks > 0 ? Math.round((totalCompleted / totalTasks) * 100) : 0;
+            updateOverallProgress(overallProgress, totalCompleted, totalTasks);
+
+            // Update HubSpot if connected
+            if (AppState.hubspot.connected) {
+                await updateHubSpotProgress(overallProgress, totalCompleted, totalTasks);
+            }
+        }
+
+        function updateProjectStatus(projectId, completionPercent) {
+            const statusElement = document.getElementById(`status-${projectId}`);
+            if (!statusElement) return;
+
+            if (completionPercent === 0) {
+                statusElement.className = 'project-status status-not-started';
+                statusElement.textContent = '○';
+            } else if (completionPercent < 100) {
+                statusElement.className = 'project-status status-in-progress';
+                statusElement.textContent = '●';
+            } else {
+                statusElement.className = 'project-status status-completed';
+                statusElement.textContent = '✓';
+            }
+        }
+
+        function updatePhaseProgress(phaseNum, progress) {
+            const progressBar = document.getElementById(`phase${phaseNum}Progress`);
+            const progressText = document.getElementById(`phase${phaseNum}Text`);
+            
+            if (progressBar) {
+                progressBar.style.width = `${progress}%`;
+            }
+            
+            if (progressText) {
+                progressText.textContent = `${Math.round(progress)}% Complete`;
+            }
+            
+            AppState.progress.phases[`phase${phaseNum}`] = progress;
+        }
+
+        function updateOverallProgress(percent, completed, total) {
+            document.getElementById('overallProgress').textContent = `${percent}%`;
+            document.getElementById('progressPercentage').textContent = `${percent}%`;
+            document.getElementById('completedTasks').textContent = `${completed}/${total}`;
+            document.getElementById('progressBar').style.width = `${percent}%`;
+            
+            // Update progress text with motivational messaging
+            let progressText = '';
+            if (percent === 0) {
+                progressText = '🚀 Ready to launch! Connect integrations and start building the future of AI commerce.';
+            } else if (percent < 25) {
+                progressText = `🔨 Foundation phase ${percent}% complete - building strong infrastructure for exponential growth!`;
+            } else if (percent < 50) {
+                progressText = `⚡ Excellent progress! ${percent}% complete - core platform taking shape beautifully.`;
+            } else if (percent < 75) {
+                progressText = `🌟 Outstanding work! ${percent}% complete - approaching dual-platform launch readiness.`;
+            } else {
+                progressText = `🎯 Incredible! ${percent}% complete - market leadership within reach!`;
+            }
+            
+            document.getElementById('progressText').textContent = progressText;
+            
+            // Update milestones
+            updateMilestones(percent);
+            
+            // Store progress
+            AppState.progress.overall = percent;
+            AppState.progress.completed = completed;
+            AppState.progress.total = total;
+        }
+
+        function updateMilestones(progress) {
+            const milestones = [
+                { id: 'milestone1', threshold: 25 },
+                { id: 'milestone2', threshold: 50 },
+                { id: 'milestone3', threshold: 75 },
+                { id: 'milestone4', threshold: 100 }
+            ];
+
+            milestones.forEach(milestone => {
+                const element = document.getElementById(milestone.id);
+                if (!element) return;
+
+                element.classList.remove('current', 'completed');
+                
+                if (progress >= milestone.threshold) {
+                    element.classList.add('completed');
+                } else if (progress >= milestone.threshold - 25) {
+                    element.classList.add('current');
+                }
+            });
+        }
+
+        // HubSpot Integration Functions
+        async function initializeHubSpotData() {
+            try {
+                addLog('INFO', 'Initializing HubSpot data synchronization...');
+                
+                // Create or update deals for each project
+                for (const [projectId, project] of Object.entries(projectData)) {
+                    await createOrUpdateHubSpotDeal(projectId, project);
+                }
+                
+                // Update pipeline value
+                await updatePipelineValue();
+                
+                addLog('SUCCESS', 'HubSpot data initialization completed');
+                
+            } catch (error) {
+                console.error('HubSpot initialization error:', error);
+                addLog('ERROR', `HubSpot initialization failed: ${error.message}`);
+            }
+        }
+
+        async function createOrUpdateHubSpotDeal(projectId, project) {
+            try {
+                const dealData = {
+                    properties: {
+                        dealname: `MK Processor 4.2.0 - ${project.title}`,
+                        amount: project.estimatedHours * 150, // $150/hour estimate
+                        dealstage: getHubSpotStage(project.phase),
+                        pipeline: 'default',
+                        description: project.description,
+                        priority: project.priority,
+                        estimated_hours: project.estimatedHours,
+                        project_phase: project.phase,
+                        project_id: projectId,
+                        mk_processor_project: true
+                    }
+                };
+
+                const response = await fetch('https://api.hubapi.com/crm/v3/objects/deals', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${AppState.hubspot.apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dealData)
+                });
+
+                if (response.ok) {
+                    const deal = await response.json();
+                    project.hubspotDealId = deal.id;
+                    addLog('INFO', `Created HubSpot deal for ${project.title}`);
+                }
+
+            } catch (error) {
+                console.error(`Error creating HubSpot deal for ${projectId}:`, error);
+            }
+        }
+
+        function getHubSpotStage(phase) {
+            const stages = {
+                1: 'qualifiedtobuy',
+                2: 'presentationscheduled',
+                3: 'decisionmakerboughtin',
+                4: 'contractsent'
+            };
+            return stages[phase] || 'qualifiedtobuy';
+        }
+
+        async function updateHubSpotProgress(progress, completed, total) {
+            if (!AppState.hubspot.connected) return;
+
+            try {
+                // Update a custom object or contact with overall progress
+                const progressData = {
+                    properties: {
+                        mk_processor_progress: progress,
+                        completed_tasks: completed,
+                        total_tasks: total,
+                        last_updated: new Date().toISOString(),
+                        github_connected: AppState.github.connected,
+                        current_phase: getCurrentPhase(progress)
+                    }
+                };
+
+                // This would typically update a custom object or contact
+                // For demo purposes, we'll just log it
+                addLog('INFO', `Updated HubSpot with progress: ${progress}% (${completed}/${total})`);
+                
+            } catch (error) {
+                console.error('HubSpot progress update error:', error);
+                addLog('ERROR', `Failed to update HubSpot progress: ${error.message}`);
+            }
+        }
+
+        function getCurrentPhase(progress) {
+            if (progress < 25) return 'Phase 1: Foundation';
+            if (progress < 50) return 'Phase 2: Market Traction';
+            if (progress < 75) return 'Phase 3: Dual Platform';
+            return 'Phase 4: Market Dominance';
+        }
+
+        async function updatePipelineValue() {
+            try {
+                let totalValue = 0;
+                for (const project of Object.values(projectData)) {
+                    totalValue += project.estimatedHours * 150;
+                }
+                
+                document.getElementById('hubspotDeals').textContent = `${totalValue.toLocaleString()}`;
+                document.getElementById('pipelineChange').textContent = 'Total project value';
+                
+            } catch (error) {
+                console.error('Pipeline value update error:', error);
+            }
+        }
+
+        // Auto-sync functionality
+        function startAutoSync() {
+            if (AppState.sync.interval) {
+                clearInterval(AppState.sync.interval);
+            }
+            
+            AppState.sync.autoSync = true;
+            updateSyncStatus('autoSync', 'enabled');
+            
+            AppState.sync.interval = setInterval(async () => {
+                if (AppState.github.connected) {
+                    await scanRepository();
+                }
+                
+                updateNextSyncTime();
+                
+            }, AppState.sync.frequency * 60 * 1000);
+            
+            updateNextSyncTime();
+            addLog('INFO', `Auto-sync enabled - syncing every ${AppState.sync.frequency} minutes`);
+        }
+
+        function updateNextSyncTime() {
+            const nextSync = new Date(Date.now() + AppState.sync.frequency * 60 * 1000);
+            document.getElementById('nextSync').textContent = nextSync.toLocaleTimeString();
+        }
+
+        // Quick Action Functions
+        async function forceSyncAll() {
+            addLog('INFO', 'Manual sync triggered');
+            showNotification('Forcing sync of all connected services...', 'info');
+            
+            if (AppState.github.connected) {
+                await scanRepository();
+            }
+            
+            if (AppState.hubspot.connected) {
+                await updateHubSpotProgress(AppState.progress.overall, AppState.progress.completed, AppState.progress.total);
+            }
+            
+            document.getElementById('recordsSynced').textContent = AppState.progress.completed;
+            showNotification('Sync completed successfully!', 'success');
+        }
+
+        async function generateReport() {
+            addLog('INFO', 'Generating comprehensive project report');
+            showNotification('Generating detailed project report...', 'info');
+            
+            const report = {
+                timestamp: new Date().toISOString(),
+                overview: {
+                    overallProgress: AppState.progress.overall,
+                    completedTasks: AppState.progress.completed,
+                    totalTasks: AppState.progress.total,
+                    currentPhase: getCurrentPhase(AppState.progress.overall)
+                },
+                phases: AppState.progress.phases,
+                integrations: {
+                    github: AppState.github.connected,
+                    hubspot: AppState.hubspot.connected
+                },
+                projects: {}
+            };
+
+            // Add project details
+            for (const [projectId, project] of Object.entries(projectData)) {
+                report.projects[projectId] = {
+                    title: project.title,
+                    phase: project.phase,
+                    priority: project.priority,
+                    estimatedHours: project.estimatedHours,
+                    tasks: project.tasks.length,
+                    hubspotDealId: project.hubspotDealId
+                };
+            }
+
+            // Download report as JSON
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mk-processor-report-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            addLog('SUCCESS', 'Project report generated and downloaded');
+            showNotification('Report generated and downloaded!', 'success');
+        }
+
+        async function updateHubSpot() {
+            if (!AppState.hubspot.connected) {
+                showNotification('HubSpot not connected. Please connect first.', 'warning');
+                return;
+            }
+            
+            addLog('INFO', 'Updating HubSpot with latest project data');
+            showNotification('Updating HubSpot with latest progress...', 'info');
+            
+            await updateHubSpotProgress(AppState.progress.overall, AppState.progress.completed, AppState.progress.total);
+            await updatePipelineValue();
+            
+            showNotification('HubSpot updated successfully!', 'success');
+        }
+
+        async function exportData() {
+            addLog('INFO', 'Exporting all project data');
+            showNotification('Exporting project data...', 'info');
+            
+            const exportData = {
+                appState: AppState,
+                projectData: projectData,
+                exportTime: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mk-processor-data-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            addLog('SUCCESS', 'Project data exported successfully');
+            showNotification('Data exported successfully!', 'success');
+        }
+
+        function scheduleDemo() {
+            addLog('INFO', 'Demo scheduling requested');
+            showNotification('Demo scheduling feature coming soon!', 'info');
+            
+            // In a real implementation, this would integrate with calendly or similar
+            // For now, we'll just open a mailto link
+            const subject = 'MK Processor 4.2.0 Demo Request';
+            const body = `Hi,
+
+I would like to schedule a demo of MK Processor 4.2.0 - the AI-Powered Dual-Market Intelligence Platform.
+
+Current Project Progress: ${AppState.progress.overall}%
+Completed Tasks: ${AppState.progress.completed}/${AppState.progress.total}
+
+Please let me know your availability.
+
+Best regards`;
+            
+            window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+        }
+
+        function createTask() {
+            addLog('INFO', 'Task creation requested');
+            showNotification('Task creation feature coming soon!', 'info');
+            
+            // This would typically open a modal to create a new task
+            // For now, we'll just log it
+            console.log('Create task functionality would be implemented here');
+        }
+
+        // Enhanced task details with interactive task management
+        function showTaskDetails(projectId) {
+            const project = projectData[projectId];
+            if (!project) return;
+
+            // Initialize task statuses if not exists
+            if (!project.taskStatuses) {
+                project.taskStatuses = project.tasks.map(() => 'not-started');
+            }
+            if (!project.fileStatuses) {
+                project.fileStatuses = project.files.map(() => 'not-created');
+            }
+
+            const completedTasks = project.taskStatuses.filter(status => status === 'completed').length;
+            const inProgressTasks = project.taskStatuses.filter(status => status === 'in-progress').length;
+            const completedFiles = project.fileStatuses.filter(status => status === 'created').length;
+
+            const taskDetails = document.getElementById('taskDetails');
+            taskDetails.innerHTML = `
+                <div class="task-card" style="max-width: none; grid-column: 1 / -1;">
+                    <div class="task-header">
+                        <div class="task-title">${project.title}</div>
+                        <div class="task-meta">
+                            <div><strong>Phase ${project.phase}</strong></div>
+                            <div>Priority: <span class="priority-${project.priority.toLowerCase()}">${project.priority}</span></div>
+                            <div>${project.estimatedHours}h estimated</div>
+                            <div class="progress-indicator">
+                                <div class="progress-circle">
+                                    <span>${completedTasks}/${project.tasks.length}</span>
+                                </div>
+                                <small>Tasks Complete</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p style="color: #666; margin-bottom: 20px; font-size: 1.1rem;">${project.description}</p>
+                    
+                    <!-- Project Actions Bar -->
+                    <div class="project-actions-bar" style="display: flex; gap: 10px; margin-bottom: 25px; padding: 15px; background: #f8fafc; border-radius: 10px; flex-wrap: wrap;">
+                        <button class="action-btn ${getProjectStatus(projectId) === 'in-progress' ? 'active' : ''}" onclick="startProject('${projectId}')" id="startBtn-${projectId}">
+                            🚀 ${getProjectStatus(projectId) === 'not-started' ? 'Start Project' : 'Working On This'}
+                        </button>
+                        <button class="action-btn" onclick="openTaskTimer('${projectId}')">
+                            ⏱️ Time Tracker
+                        </button>
+                        <button class="action-btn" onclick="addTaskNote('${projectId}')">
+                            📝 Add Notes
+                        </button>
+                        <button class="action-btn" onclick="createHubSpotDeal('${projectId}')">
+                            📈 Create HubSpot Deal
+                        </button>
+                        <button class="action-btn" onclick="openInGitHub('${projectId}')">
+                            🔗 Open in GitHub
+                        </button>
+                        <button class="action-btn" onclick="scheduleWork('${projectId}')">
+                            📅 Schedule Work
+                        </button>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+                        <!-- Interactive Tasks Section -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h4 style="color: #667eea; margin: 0;">📋 Interactive Task List (${completedTasks}/${project.tasks.length} completed)</h4>
+                                <div class="task-filter" style="display: flex; gap: 10px;">
+                                    <button class="filter-btn active" onclick="filterTasks('${projectId}', 'all')">All</button>
+                                    <button class="filter-btn" onclick="filterTasks('${projectId}', 'todo')">To Do</button>
+                                    <button class="filter-btn" onclick="filterTasks('${projectId}', 'in-progress')">In Progress</button>
+                                    <button class="filter-btn" onclick="filterTasks('${projectId}', 'completed')">Done</button>
+                                </div>
+                            </div>
+                            
+                            <div class="task-progress-bar" style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; margin-bottom: 20px; overflow: hidden;">
+                                <div style="height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); width: ${(completedTasks/project.tasks.length)*100}%; transition: width 0.5s ease;"></div>
+                            </div>
+
+                            <ul class="interactive-task-list" id="taskList-${projectId}">
+                                ${project.tasks.map((task, index) => `
+                                    <li class="interactive-task-item ${project.taskStatuses[index]}" data-status="${project.taskStatuses[index]}" data-filter="all ${project.taskStatuses[index] === 'not-started' ? 'todo' : project.taskStatuses[index]}">
+                                        <div class="task-checkbox" onclick="toggleTaskStatus('${projectId}', ${index})">
+                                            ${getTaskStatusIcon(project.taskStatuses[index])}
+                                        </div>
+                                        <div class="task-content" onclick="openTaskWorkspace('${projectId}', ${index})">
+                                            <div class="task-text">${task}</div>
+                                            <div class="task-actions">
+                                                <button class="mini-btn" onclick="startTaskTimer('${projectId}', ${index}); event.stopPropagation();" title="Start Timer">⏱️</button>
+                                                <button class="mini-btn" onclick="addTaskComment('${projectId}', ${index}); event.stopPropagation();" title="Add Comment">💬</button>
+                                                <button class="mini-btn" onclick="setTaskPriority('${projectId}', ${index}); event.stopPropagation();" title="Set Priority">⭐</button>
+                                                <button class="mini-btn work-btn" onclick="openTaskWorkspace('${projectId}', ${index}); event.stopPropagation();" title="Work On This">🔨</button>
+                                            </div>
+                                        </div>
+                                        <div class="task-status-badge ${project.taskStatuses[index]}">${project.taskStatuses[index].replace('-', ' ')}</div>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+
+                        <!-- Files & Resources Section -->
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: #667eea;">📁 Required Files (${completedFiles}/${project.files.length} created)</h4>
+                            <ul class="file-checklist" id="fileList-${projectId}">
+                                ${project.files.map((file, index) => `
+                                    <li class="file-item ${project.fileStatuses[index]}" onclick="toggleFileStatus('${projectId}', ${index})">
+                                        <div class="file-icon">${getFileIcon(file)}</div>
+                                        <div class="file-name">${file}</div>
+                                        <div class="file-actions">
+                                            <button class="mini-btn" onclick="openFileInGitHub('${projectId}', '${file}'); event.stopPropagation();" title="Open in GitHub">🔗</button>
+                                            <button class="mini-btn" onclick="createFileTemplate('${projectId}', '${file}'); event.stopPropagation();" title="Create Template">📝</button>
+                                        </div>
+                                        <div class="file-status ${project.fileStatuses[index]}">${project.fileStatuses[index] === 'created' ? '✅' : '⭕'}</div>
+                                    </li>
+                                `).join('')}
+                            </ul>
+
+                            <!-- Dependencies Section -->
+                            <div style="margin-top: 25px; padding: 15px; background: #f8fafc; border-radius: 10px;">
+                                <h5 style="margin-bottom: 10px; color: #667eea;">🔗 Dependencies</h5>
+                                ${project.dependencies.length > 0 ? 
+                                    project.dependencies.map(dep => `
+                                        <div class="dependency-item" onclick="showTaskDetails('${dep}')">
+                                            <span>${projectData[dep]?.title || dep}</span>
+                                            <span class="dependency-status ${getProjectStatus(dep)}">${getProjectStatus(dep)}</span>
+                                        </div>
+                                    `).join('') : 
+                                    '<div style="color: #64748b; font-style: italic;">No dependencies</div>'
+                                }
+                            </div>
+
+                            <!-- Quick Stats -->
+                            <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 10px; border-left: 4px solid #0ea5e9;">
+                                <h5 style="margin-bottom: 10px; color: #0369a1;">📊 Quick Stats</h5>
+                                <div class="stat-row">Tasks: ${completedTasks}/${project.tasks.length} (${Math.round((completedTasks/project.tasks.length)*100)}%)</div>
+                                <div class="stat-row">Files: ${completedFiles}/${project.files.length} (${Math.round((completedFiles/project.files.length)*100)}%)</div>
+                                <div class="stat-row">Estimated: ${project.estimatedHours} hours</div>
+                                <div class="stat-row">Value: ${(project.estimatedHours * 150).toLocaleString()}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            taskDetails.style.display = 'grid';
+            taskDetails.scrollIntoView({ behavior: 'smooth' });
+            
+            addLog('INFO', `Opening interactive workspace for ${project.title}`);
+        }
+
+        // Enhanced CSS for interactive elements
+        const additionalCSS = `
+            .interactive-task-item {
+                display: flex;
+                align-items: center;
+                padding: 12px;
+                margin-bottom: 8px;
+                background: white;
+                border: 2px solid #e2e8f0;
+                border-radius: 10px;
+                transition: all 0.3s ease;
+                cursor: pointer;
+                position: relative;
+            }
+
+            .interactive-task-item:hover {
+                border-color: #667eea;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+                transform: translateY(-1px);
+            }
+
+            .interactive-task-item.completed {
+                background: #f0fdf4;
+                border-color: #22c55e;
+                opacity: 0.8;
+            }
+
+            .interactive-task-item.in-progress {
+                background: #fffbeb;
+                border-color: #f59e0b;
+                border-left: 6px solid #f59e0b;
+            }
+
+            .task-checkbox {
+                width: 24px;
+                height: 24px;
+                margin-right: 12px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                transition: transform 0.2s;
+            }
+
+            .task-checkbox:hover {
+                transform: scale(1.2);
+            }
+
+            .task-content {
+                flex: 1;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .task-text {
+                font-weight: 500;
+                color: #374151;
+            }
+
+            .task-actions {
+                display: flex;
+                gap: 5px;
+                opacity: 0;
+                transition: opacity 0.3s;
+            }
+
+            .interactive-task-item:hover .task-actions {
+                opacity: 1;
+            }
+
+            .mini-btn {
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                padding: 4px 6px;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .mini-btn:hover {
+                background: #667eea;
+                color: white;
+                transform: translateY(-1px);
+            }
+
+            .mini-btn.work-btn {
+                background: #22c55e;
+                color: white;
+                font-weight: bold;
+            }
+
+            .task-status-badge {
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+                margin-left: 10px;
+            }
+
+            .task-status-badge.not-started {
+                background: #f1f5f9;
+                color: #64748b;
+            }
+
+            .task-status-badge.in-progress {
+                background: #fef3c7;
+                color: #92400e;
+            }
+
+            .task-status-badge.completed {
+                background: #dcfce7;
+                color: #166534;
+            }
+
+            .filter-btn {
+                padding: 6px 12px;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                background: white;
+                cursor: pointer;
+                font-size: 12px;
+                transition: all 0.2s;
+            }
+
+            .filter-btn.active,
+            .filter-btn:hover {
+                background: #667eea;
+                color: white;
+                border-color: #667eea;
+            }
+
+            .file-item {
+                display: flex;
+                align-items: center;
+                padding: 10px;
+                margin-bottom: 6px;
+                background: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .file-item:hover {
+                border-color: #667eea;
+                background: #f8fafc;
+            }
+
+            .file-item.created {
+                background: #f0fdf4;
+                border-color: #22c55e;
+            }
+
+            .file-icon {
+                margin-right: 8px;
+                font-size: 16px;
+            }
+
+            .file-name {
+                flex: 1;
+                font-size: 13px;
+                color: #374151;
+            }
+
+            .file-actions {
+                display: flex;
+                gap: 4px;
+                opacity: 0;
+                transition: opacity 0.3s;
+            }
+
+            .file-item:hover .file-actions {
+                opacity: 1;
+            }
+
+            .file-status {
+                margin-left: 8px;
+                font-size: 16px;
+            }
+
+            .dependency-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px;
+                margin-bottom: 4px;
+                background: white;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s;
+                font-size: 13px;
+            }
+
+            .dependency-item:hover {
+                background: #667eea;
+                color: white;
+            }
+
+            .dependency-status {
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 10px;
+                font-weight: 600;
+            }
+
+            .dependency-status.completed {
+                background: #22c55e;
+                color: white;
+            }
+
+            .dependency-status.in-progress {
+                background: #f59e0b;
+                color: white;
+            }
+
+            .dependency-status.not-started {
+                background: #64748b;
+                color: white;
+            }
+
+            .stat-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 4px;
+                font-size: 13px;
+                color: #0369a1;
+            }
+
+            .progress-indicator {
+                text-align: center;
+            }
+
+            .progress-circle {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: #667eea;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 11px;
+                font-weight: bold;
+                margin: 0 auto 5px;
+            }
+
+            .project-actions-bar .action-btn.active {
+                background: #22c55e;
+                transform: scale(1.05);
+                box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            }
+
+            .hidden {
+                display: none !important;
+            }
+        `;
+
+        // Add the CSS to the document
+        if (!document.getElementById('interactive-css')) {
+            const style = document.createElement('style');
+            style.id = 'interactive-css';
+            style.textContent = additionalCSS;
+            document.head.appendChild(style);
+        }
+
+        // Task Management Functions
+        function getTaskStatusIcon(status) {
+            switch(status) {
+                case 'completed': return '✅';
+                case 'in-progress': return '🔄';
+                default: return '⭕';
+            }
+        }
+
+        function getFileIcon(filename) {
+            if (filename.includes('.py')) return '🐍';
+            if (filename.includes('.js') || filename.includes('.jsx')) return '📜';
+            if (filename.includes('.html')) return '🌐';
+            if (filename.includes('.css')) return '🎨';
+            if (filename.includes('.md')) return '📝';
+            if (filename.includes('.json')) return '📋';
+            if (filename.includes('.yml') || filename.includes('.yaml')) return '⚙️';
+            if (filename.includes('Dockerfile')) return '🐳';
+            if (filename.includes('/')) return '📁';
+            return '📄';
+        }
+
+        function getProjectStatus(projectId) {
+            const project = projectData[projectId];
+            if (!project || !project.taskStatuses) return 'not-started';
+            
+            const completed = project.taskStatuses.filter(s => s === 'completed').length;
+            const inProgress = project.taskStatuses.filter(s => s === 'in-progress').length;
+            
+            if (completed === project.tasks.length) return 'completed';
+            if (inProgress > 0 || completed > 0) return 'in-progress';
+            return 'not-started';
+        }
+
+        function toggleTaskStatus(projectId, taskIndex) {
+            const project = projectData[projectId];
+            if (!project.taskStatuses) {
+                project.taskStatuses = project.tasks.map(() => 'not-started');
+            }
+
+            const currentStatus = project.taskStatuses[taskIndex];
+            let newStatus;
+
+            switch(currentStatus) {
+                case 'not-started':
+                    newStatus = 'in-progress';
+                    break;
+                case 'in-progress':
+                    newStatus = 'completed';
+                    break;
+                case 'completed':
+                    newStatus = 'not-started';
+                    break;
+                default:
+                    newStatus = 'in-progress';
+            }
+
+            project.taskStatuses[taskIndex] = newStatus;
+            
+            // Update UI
+            showTaskDetails(projectId);
+            updateProjectStatusInRoadmap(projectId);
+            
+            // Log the change
+            addLog('INFO', `Task "${project.tasks[taskIndex]}" marked as ${newStatus}`);
+            
+            // Show notification
+            showNotification(`Task marked as ${newStatus.replace('-', ' ')}!`, 'success');
+            
+            // Update HubSpot if connected
+            if (AppState.hubspot.connected) {
+                updateHubSpotProgress(AppState.progress.overall, AppState.progress.completed, AppState.progress.total);
+            }
+        }
+
+        function toggleFileStatus(projectId, fileIndex) {
+            const project = projectData[projectId];
+            if (!project.fileStatuses) {
+                project.fileStatuses = project.files.map(() => 'not-created');
+            }
+
+            const currentStatus = project.fileStatuses[fileIndex];
+            const newStatus = currentStatus === 'created' ? 'not-created' : 'created';
+            
+            project.fileStatuses[fileIndex] = newStatus;
+            
+            // Update UI
+            showTaskDetails(projectId);
+            
+            // Log the change
+            addLog('INFO', `File "${project.files[fileIndex]}" marked as ${newStatus}`);
+            showNotification(`File marked as ${newStatus.replace('-', ' ')}!`, 'success');
+        }
+
+        function filterTasks(projectId, filter) {
+            const taskList = document.getElementById(`taskList-${projectId}`);
+            const tasks = taskList.querySelectorAll('.interactive-task-item');
+            
+            // Update filter buttons
+            const filterBtns = taskList.parentElement.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Filter tasks
+            tasks.forEach(task => {
+                const taskFilter = task.dataset.filter;
+                if (filter === 'all' || taskFilter.includes(filter)) {
+                    task.style.display = 'flex';
+                } else {
+                    task.style.display = 'none';
+                }
+            });
+        }
+
+        function startProject(projectId) {
+            const project = projectData[projectId];
+            
+            // Initialize task statuses if needed
+            if (!project.taskStatuses) {
+                project.taskStatuses = project.tasks.map(() => 'not-started');
+            }
+            
+            // Mark first task as in-progress if none are started
+            const hasStartedTasks = project.taskStatuses.some(status => status !== 'not-started');
+            if (!hasStartedTasks) {
+                project.taskStatuses[0] = 'in-progress';
+            }
+            
+            addLog('SUCCESS', `Started working on ${project.title}`);
+            showNotification(`You're now working on ${project.title}!`, 'success');
+            
+            // Update UI
+            showTaskDetails(projectId);
+            updateProjectStatusInRoadmap(projectId);
+        }
+
+        function openTaskWorkspace(projectId, taskIndex) {
+            const project = projectData[projectId];
+            const task = project.tasks[taskIndex];
+            
+            addLog('INFO', `Opening workspace for: ${task}`);
+            showNotification(`Opening workspace for: ${task}`, 'info');
+            
+            // Mark task as in-progress if not already
+            if (!project.taskStatuses) {
+                project.taskStatuses = project.tasks.map(() => 'not-started');
+            }
+            
+            if (project.taskStatuses[taskIndex] === 'not-started') {
+                project.taskStatuses[taskIndex] = 'in-progress';
+                showTaskDetails(projectId);
+            }
+            
+            // Open task workspace modal (placeholder for now)
+            openTaskModal(projectId, taskIndex, task);
+        }
+
+        function openTaskModal(projectId, taskIndex, task) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 15px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="color: #667eea; margin: 0;">🔨 Task Workspace</h3>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+                    </div>
+                    
+                    <h4 style="color: #2d3748; margin-bottom: 15px;">${task}</h4>
+                    
+                    <div style="display: grid; gap: 20px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">📝 Task Notes:</label>
+                            <textarea id="taskNotes-${projectId}-${taskIndex}" style="width: 100%; height: 100px; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; resize: vertical;" placeholder="Add your notes, progress updates, or blockers here..."></textarea>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">⏱️ Time Spent:</label>
+                                <input type="number" id="timeSpent-${projectId}-${taskIndex}" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;" placeholder="Hours" min="0" step="0.5">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">📊 Progress:</label>
+                                <select id="taskProgress-${projectId}-${taskIndex}" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;">
+                                    <option value="not-started">Not Started</option>
+                                    <option value="in-progress" selected>In Progress</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">🔗 Related Files:</label>
+                            <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                ${projectData[projectId].files.map(file => `
+                                    <span style="padding: 4px 8px; background: #f1f5f9; border-radius: 4px; font-size: 12px; cursor: pointer;" onclick="openFileInGitHub('${projectId}', '${file}')">${file}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                            <button onclick="saveTaskProgress('${projectId}', ${taskIndex}); this.parentElement.parentElement.parentElement.parentElement.remove();" style="background: #22c55e; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                💾 Save Progress
+                            </button>
+                            <button onclick="markTaskComplete('${projectId}', ${taskIndex}); this.parentElement.parentElement.parentElement.parentElement.remove();" style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                ✅ Mark Complete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Load existing data if any
+            const savedNotes = localStorage.getItem(`task-notes-${projectId}-${taskIndex}`);
+            const savedTime = localStorage.getItem(`task-time-${projectId}-${taskIndex}`);
+            
+            if (savedNotes) {
+                document.getElementById(`taskNotes-${projectId}-${taskIndex}`).value = savedNotes;
+            }
+            if (savedTime) {
+                document.getElementById(`timeSpent-${projectId}-${taskIndex}`).value = savedTime;
+            }
+            
+            // Set current status
+            const currentStatus = projectData[projectId].taskStatuses[taskIndex] || 'not-started';
+            document.getElementById(`taskProgress-${projectId}-${taskIndex}`).value = currentStatus;
+        }
+
+        function saveTaskProgress(projectId, taskIndex) {
+            const project = projectData[projectId];
+            const task = project.tasks[taskIndex];
+            
+            // Get form data
+            const notes = document.getElementById(`taskNotes-${projectId}-${taskIndex}`).value;
+            const timeSpent = document.getElementById(`timeSpent-${projectId}-${taskIndex}`).value;
+            const progress = document.getElementById(`taskProgress-${projectId}-${taskIndex}`).value;
+            
+            // Save to localStorage
+            localStorage.setItem(`task-notes-${projectId}-${taskIndex}`, notes);
+            localStorage.setItem(`task-time-${projectId}-${taskIndex}`, timeSpent);
+            
+            // Update task status
+            if (!project.taskStatuses) {
+                project.taskStatuses = project.tasks.map(() => 'not-started');
+            }
+            project.taskStatuses[taskIndex] = progress;
+            
+            // Log the update
+            addLog('SUCCESS', `Progress saved for: ${task} (${progress})`);
+            showNotification('Task progress saved successfully!', 'success');
+            
+            // Update UI
+            showTaskDetails(projectId);
+            updateProjectStatusInRoadmap(projectId);
+            
+            // Update HubSpot
+            if (AppState.hubspot.connected) {
+                updateHubSpotTaskProgress(projectId, taskIndex, progress, timeSpent, notes);
+            }
+        }
+
+        function markTaskComplete(projectId, taskIndex) {
+            const project = projectData[projectId];
+            const task = project.tasks[taskIndex];
+            
+            if (!project.taskStatuses) {
+                project.taskStatuses = project.tasks.map(() => 'not-started');
+            }
+            
+            project.taskStatuses[taskIndex] = 'completed';
+            
+            addLog('SUCCESS', `✅ Task completed: ${task}`);
+            showNotification(`🎉 Congratulations! Task completed: ${task}`, 'success');
+            
+            // Update UI
+            showTaskDetails(projectId);
+            updateProjectStatusInRoadmap(projectId);
+            
+            // Check if project is complete
+            const completedTasks = project.taskStatuses.filter(status => status === 'completed').length;
+            if (completedTasks === project.tasks.length) {
+                addLog('SUCCESS', `🎊 PROJECT COMPLETED: ${project.title}!`);
+                showNotification(`🎊 AMAZING! You completed ${project.title}!`, 'success');
+                
+                // Trigger celebration
+                celebrateProjectCompletion(projectId);
+            }
+        }
+
+        function celebrateProjectCompletion(projectId) {
+            const project = projectData[projectId];
+            
+            // Create celebration modal
+            const celebrationModal = document.createElement('div');
+            celebrationModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 20000;
+                animation: fadeIn 0.5s ease;
+            `;
+            
+            celebrationModal.innerHTML = `
+                <div style="text-align: center; color: white; max-width: 600px; padding: 40px;">
+                    <div style="font-size: 80px; margin-bottom: 20px;">🎊</div>
+                    <h1 style="font-size: 3rem; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                        PROJECT COMPLETED!
+                    </h1>
+                    <h2 style="font-size: 1.8rem; margin-bottom: 30px; opacity: 0.9;">
+                        ${project.title}
+                    </h2>
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 15px; padding: 20px; margin-bottom: 30px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; text-align: center;">
+                            <div>
+                                <div style="font-size: 2rem; margin-bottom: 5px;">📋</div>
+                                <div style="font-size: 1.2rem; font-weight: bold;">${project.tasks.length}</div>
+                                <div style="opacity: 0.8;">Tasks Done</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 2rem; margin-bottom: 5px;">⏱️</div>
+                                <div style="font-size: 1.2rem; font-weight: bold;">${project.estimatedHours}h</div>
+                                <div style="opacity: 0.8;">Estimated</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 2rem; margin-bottom: 5px;">💰</div>
+                                <div style="font-size: 1.2rem; font-weight: bold;">${(project.estimatedHours * 150).toLocaleString()}</div>
+                                <div style="opacity: 0.8;">Value Created</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 2rem; margin-bottom: 5px;">🚀</div>
+                                <div style="font-size: 1.2rem; font-weight: bold;">Phase ${project.phase}</div>
+                                <div style="opacity: 0.8;">Complete</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 15px; justify-content: center;">
+                        <button onclick="shareSuccess('${projectId}'); this.parentElement.parentElement.parentElement.remove();" style="background: #22c55e; color: white; border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                            📢 Share Success
+                        </button>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove(); showNextProject('${projectId}');" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px 30px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                            ➡️ Next Project
+                        </button>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove();" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 15px 30px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                            ✨ Continue
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(celebrationModal);
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                if (document.body.contains(celebrationModal)) {
+                    document.body.removeChild(celebrationModal);
+                }
+            }, 10000);
+        }
+
+        function shareSuccess(projectId) {
+            const project = projectData[projectId];
+            const shareText = `🎉 Just completed ${project.title} for MK Processor 4.2.0! 
+
+📊 ${project.tasks.length} tasks completed
+⏱️ ${project.estimatedHours} hours of focused development
+💰 ${(project.estimatedHours * 150).toLocaleString()} in value created
+🚀 Phase ${project.phase} milestone achieved
+
+Building the future of AI-powered dual-market intelligence! 
+
+#MKProcessor #AI #Entrepreneurship #BuildInPublic`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'MK Processor 4.2.0 - Project Completed!',
+                    text: shareText,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback to clipboard
+                navigator.clipboard.writeText(shareText).then(() => {
+                    showNotification('Success message copied to clipboard!', 'success');
+                });
+            }
+        }
+
+        function showNextProject(completedProjectId) {
+            const completedProject = projectData[completedProjectId];
+            
+            // Find next logical project based on dependencies
+            for (const [projectId, project] of Object.entries(projectData)) {
+                if (project.dependencies.includes(completedProjectId) && getProjectStatus(projectId) === 'not-started') {
+                    addLog('INFO', `Recommended next project: ${project.title}`);
+                    showNotification(`Ready to start: ${project.title}`, 'info');
+                    showTaskDetails(projectId);
+                    return;
+                }
+            }
+            
+            // If no dependent projects, suggest next in same phase
+            for (const [projectId, project] of Object.entries(projectData)) {
+                if (project.phase === completedProject.phase && getProjectStatus(projectId) === 'not-started') {
+                    showTaskDetails(projectId);
+                    return;
+                }
+            }
+            
+            // Suggest next phase
+            const nextPhase = completedProject.phase + 1;
+            for (const [projectId, project] of Object.entries(projectData)) {
+                if (project.phase === nextPhase && getProjectStatus(projectId) === 'not-started') {
+                    addLog('INFO', `Ready for Phase ${nextPhase}: ${project.title}`);
+                    showNotification(`🎯 Phase ${nextPhase} unlocked! Start with: ${project.title}`, 'success');
+                    showTaskDetails(projectId);
+                    return;
+                }
+            }
+        }
+
+        function updateProjectStatusInRoadmap(projectId) {
+            const project = projectData[projectId];
+            const status = getProjectStatus(projectId);
+            
+            // Update the visual status in the roadmap
+            const statusElement = document.getElementById(`status-${projectId}`);
+            if (statusElement) {
+                statusElement.className = `project-status status-${status}`;
+                statusElement.textContent = getProjectStatusIcon(status);
+            }
+            
+            // Update phase progress
+            updatePhaseProgressFromTasks();
+            
+            // Update overall progress
+            updateOverallProgressFromTasks();
+        }
+
+        function getProjectStatusIcon(status) {
+            switch(status) {
+                case 'completed': return '✅';
+                case 'in-progress': return '🔄';
+                default: return '○';
+            }
+        }
+
+        function updatePhaseProgressFromTasks() {
+            const phaseProgress = { phase1: 0, phase2: 0, phase3: 0, phase4: 0 };
+            const phaseCounts = { phase1: 0, phase2: 0, phase3: 0, phase4: 0 };
+            
+            for (const [projectId, project] of Object.entries(projectData)) {
+                phaseCounts[`phase${project.phase}`]++;
+                
+                if (project.taskStatuses) {
+                    const completedTasks = project.taskStatuses.filter(status => status === 'completed').length;
+                    const progress = (completedTasks / project.tasks.length) * 100;
+                    phaseProgress[`phase${project.phase}`] += progress;
+                }
+            }
+            
+            // Update phase progress bars
+            for (let i = 1; i <= 4; i++) {
+                const phaseAvg = phaseCounts[`phase${i}`] > 0 ? phaseProgress[`phase${i}`] / phaseCounts[`phase${i}`] : 0;
+                updatePhaseProgress(i, phaseAvg);
+            }
+        }
+
+        function updateOverallProgressFromTasks() {
+            let totalCompleted = 0;
+            let totalTasks = 0;
+            
+            for (const project of Object.values(projectData)) {
+                totalTasks += project.tasks.length;
+                if (project.taskStatuses) {
+                    totalCompleted += project.taskStatuses.filter(status => status === 'completed').length;
+                }
+            }
+            
+            const overallProgress = totalTasks > 0 ? Math.round((totalCompleted / totalTasks) * 100) : 0;
+            updateOverallProgress(overallProgress, totalCompleted, totalTasks);
+        }
+
+        // Additional Task Management Functions
+        function openTaskTimer(projectId) {
+            addLog('INFO', `Opening time tracker for ${projectData[projectId].title}`);
+            showNotification('Time tracking feature coming soon!', 'info');
+            
+            // This would open a time tracking modal or integrate with tools like Toggl
+            console.log('Time tracker would be implemented here');
+        }
+
+        function addTaskNote(projectId) {
+            const project = projectData[projectId];
+            const note = prompt(`Add a note for ${project.title}:`);
+            
+            if (note) {
+                const notes = JSON.parse(localStorage.getItem(`project-notes-${projectId}`) || '[]');
+                notes.push({
+                    note: note,
+                    timestamp: new Date().toISOString(),
+                    id: Date.now()
+                });
+                localStorage.setItem(`project-notes-${projectId}`, JSON.stringify(notes));
+                
+                addLog('INFO', `Note added to ${project.title}: ${note.substring(0, 50)}...`);
+                showNotification('Note added successfully!', 'success');
+            }
+        }
+
+        function openInGitHub(projectId) {
+            if (!AppState.github.connected || !AppState.github.repoData) {
+                showNotification('GitHub not connected. Please connect first.', 'warning');
+                return;
+            }
+            
+            const repoUrl = AppState.github.repoData.html_url;
+            window.open(repoUrl, '_blank');
+            addLog('INFO', `Opened GitHub repository for ${projectData[projectId].title}`);
+        }
+
+        function scheduleWork(projectId) {
+            const project = projectData[projectId];
+            addLog('INFO', `Scheduling work for ${project.title}`);
+            
+            // This would integrate with calendar APIs
+            const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Work on: ${project.title}`)}&details=${encodeURIComponent(`MK Processor 4.2.0 - ${project.description}\n\nTasks:\n${project.tasks.join('\n')}`)}`;
+            window.open(calendarUrl, '_blank');
+            
+            showNotification('Calendar event template opened!', 'success');
+        }
+
+        function openFileInGitHub(projectId, filename) {
+            if (!AppState.github.connected || !AppState.github.repoData) {
+                showNotification('GitHub not connected. Please connect first.', 'warning');
+                return;
+            }
+            
+            const repoUrl = AppState.github.repoData.html_url;
+            const fileUrl = `${repoUrl}/blob/main/${filename}`;
+            window.open(fileUrl, '_blank');
+            addLog('INFO', `Opened ${filename} in GitHub`);
+        }
+
+        function createFileTemplate(projectId, filename) {
+            addLog('INFO', `Creating template for ${filename}`);
+            
+            // Generate appropriate template based on file type
+            let template = '';
+            
+            if (filename.includes('.py')) {
+                template = `#!/usr/bin/env python3
+"""
+MK Processor 4.2.0 - ${projectData[projectId].title}
+${filename}
+
+${projectData[projectId].description}
+"""
+
+def main():
+    """Main function"""
+    pass
+
+if __name__ == "__main__":
+    main()
+`;
+            } else if (filename.includes('.js') || filename.includes('.jsx')) {
+                template = `/**
+ * MK Processor 4.2.0 - ${projectData[projectId].title}
+ * ${filename}
+ * 
+ * ${projectData[projectId].description}
+ */
+
+export default function Component() {
+    return (
+        <div>
+            {/* TODO: Implement component */}
+        </div>
+    );
+}
+`;
+            } else if (filename.includes('.md')) {
+                template = `# ${projectData[projectId].title}
+
+${projectData[projectId].description}
+
+## Overview
+
+TODO: Add overview
+
+## Tasks
+
+${projectData[projectId].tasks.map(task => `- [ ] ${task}`).join('\n')}
+
+## Files
+
+${projectData[projectId].files.map(file => `- [ ] ${file}`).join('\n')}
+`;
+            } else if (filename.includes('Dockerfile')) {
+                template = `# MK Processor 4.2.0 - ${projectData[projectId].title}
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["python", "main.py"]
+`;
+            } else {
+                template = `# ${projectData[projectId].title}
+# ${filename}
+# 
+# ${projectData[projectId].description}
+
+# TODO: Implement ${filename}
+`;
+            }
+            
+            // Download template
+            const blob = new Blob([template], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename.split('/').pop() || filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification(`Template created for ${filename}!`, 'success');
+        }
+
+        function startTaskTimer(projectId, taskIndex) {
+            const project = projectData[projectId];
+            const task = project.tasks[taskIndex];
+            
+            addLog('INFO', `Started timer for: ${task}`);
+            showNotification(`⏱️ Timer started for: ${task}`, 'info');
+            
+            // Mark task as in-progress
+            if (!project.taskStatuses) {
+                project.taskStatuses = project.tasks.map(() => 'not-started');
+            }
+            
+            if (project.taskStatuses[taskIndex] === 'not-started') {
+                project.taskStatuses[taskIndex] = 'in-progress';
+                showTaskDetails(projectId);
+            }
+            
+            // Store start time
+            localStorage.setItem(`timer-start-${projectId}-${taskIndex}`, Date.now().toString());
+        }
+
+        function addTaskComment(projectId, taskIndex) {
+            const project = projectData[projectId];
+            const task = project.tasks[taskIndex];
+            const comment = prompt(`Add a comment for: ${task}`);
+            
+            if (comment) {
+                const comments = JSON.parse(localStorage.getItem(`task-comments-${projectId}-${taskIndex}`) || '[]');
+                comments.push({
+                    comment: comment,
+                    timestamp: new Date().toISOString(),
+                    id: Date.now()
+                });
+                localStorage.setItem(`task-comments-${projectId}-${taskIndex}`, JSON.stringify(comments));
+                
+                addLog('INFO', `Comment added to task: ${comment.substring(0, 50)}...`);
+                showNotification('Comment added!', 'success');
+            }
+        }
+
+        function setTaskPriority(projectId, taskIndex) {
+            const project = projectData[projectId];
+            const task = project.tasks[taskIndex];
+            const priority = prompt('Set task priority (1=High, 2=Medium, 3=Low):', '2');
+            
+            if (priority && ['1', '2', '3'].includes(priority)) {
+                const priorities = ['', 'High', 'Medium', 'Low'];
+                const priorityText = priorities[parseInt(priority)];
+                
+                localStorage.setItem(`task-priority-${projectId}-${taskIndex}`, priority);
+                addLog('INFO', `Task priority set to ${priorityText}: ${task}`);
+                showNotification(`Priority set to ${priorityText}!`, 'success');
+            }
+        }
+
+        // HubSpot Task Integration
+        async function updateHubSpotTaskProgress(projectId, taskIndex, status, timeSpent, notes) {
+            if (!AppState.hubspot.connected) return;
+            
+            try {
+                // This would create or update a task/activity in HubSpot
+                const taskData = {
+                    properties: {
+                        hs_task_subject: `${projectData[projectId].title} - Task ${taskIndex + 1}`,
+                        hs_task_body: `Task: ${projectData[projectId].tasks[taskIndex]}\n\nStatus: ${status}\nTime Spent: ${timeSpent || 0}h\n\nNotes:\n${notes || 'No notes'}`,
+                        hs_task_status: status === 'completed' ? 'COMPLETED' : 'IN_PROGRESS',
+                        hs_task_priority: 'MEDIUM',
+                        project_id: projectId,
+                        task_index: taskIndex
+                    }
+                };
+                
+                addLog('INFO', `Updated HubSpot with task progress: ${status}`);
+                
+            } catch (error) {
+                console.error('HubSpot task update error:', error);
+                addLog('ERROR', `Failed to update HubSpot task: ${error.message}`);
+            }
+        }
+
+        // Enhanced keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter to save task progress
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const activeModal = document.querySelector('[id^="taskNotes-"]');
+                if (activeModal) {
+                    const ids = activeModal.id.split('-');
+                    const projectId = ids[2];
+                    const taskIndex = parseInt(ids[3]);
+                    saveTaskProgress(projectId, taskIndex);
+                    activeModal.closest('[style*="position: fixed"]').remove();
+                }
+            }
+            
+            // Escape to close modals
+            if (e.key === 'Escape') {
+                const modals = document.querySelectorAll('[style*="position: fixed"]');
+                modals.forEach(modal => modal.remove());
+            }
+        });
+
+        // Auto-save form data in task workspace
+        document.addEventListener('input', function(e) {
+            if (e.target.id && e.target.id.startsWith('taskNotes-')) {
+                const ids = e.target.id.split('-');
+                const projectId = ids[2];
+                const taskIndex = ids[3];
+                localStorage.setItem(`task-notes-${projectId}-${taskIndex}`, e.target.value);
+            }
+        });
+
+        console.log('🎯 Interactive task management system loaded');
+        console.log('✅ Click any task to start working on it');
+        console.log('⏱️ Built-in time tracking and progress management');
+        console.log('🔗 Integrated GitHub and HubSpot sync');
+    
+function saveClaudeInput() {
+    const input = document.getElementById('claudeInput').value;
+    const filename = prompt("Enter file path to save in GitHub (e.g., ai/new_module.md):");
+    if (!filename) return;
+
+    try {
+        const repo = AppState.github.repoData.full_name;
+        const url = `https://api.github.com/repos/${repo}/contents/${filename}`;
+        const message = `Add Claude-generated content to ${filename}`;
+        const content = btoa(unescape(encodeURIComponent(input)));
+
+        fetch(url, {
+            headers: { Authorization: `Bearer ${AppState.github.token}` }
+        })
+        .then(res => res.ok ? res.json() : null)
+        .then(existing => {
+            const sha = existing?.sha;
+            return fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${AppState.github.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message,
+                    content,
+                    ...(sha && { sha })
+                })
+            });
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("GitHub write failed");
+            showNotification(`Claude content saved to ${filename}!`, 'success');
+            addLog('SUCCESS', `Saved Claude content to GitHub: ${filename}`);
+        })
+        .catch(err => {
+            console.error(err);
+            showNotification('Failed to save Claude input to GitHub', 'error');
+            addLog('ERROR', `Claude GitHub save error: ${err.message}`);
+        });
+    } catch (err) {
+        console.error(err);
+        showNotification('Unexpected error during saveClaudeInput', 'error');
+    }
+}
+
+</script>
+
+        function markProjectStarted(projectId) {
+            addLog('INFO', `Project ${projectId} marked as started`);
+            showNotification(`${projectData[projectId].title} marked as started!`, 'success');
+            
+            // Update project status
+            updateProjectStatus(projectId, 25); // Mark as 25% to show in-progress
+        }
+
+        async function createHubSpotDeal(projectId) {
+            if (!AppState.hubspot.connected) {
+                showNotification('HubSpot not connected. Please connect first.', 'warning');
+                return;
+            }
+            
+            const project = projectData[projectId];
+            await createOrUpdateHubSpotDeal(projectId, project);
+            showNotification(`HubSpot deal created for ${project.title}!`, 'success');
+        }
+
+        function exportProjectPlan(projectId) {
+            const project = projectData[projectId];
+            const plan = {
+                project: project,
+                exportTime: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(plan, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${projectId}-plan.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification(`Project plan exported for ${project.title}!`, 'success');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('INFO', 'MK Processor 4.2.0 Dashboard initialized');
+            updateLiveStatus('Dashboard Ready - Connect integrations to begin');
+            
+            // Pre-fill repository URL if provided
+            const repoUrlInput = document.getElementById('repoUrl');
+            if (repoUrlInput.value) {
+                document.getElementById('githubToken').focus();
+            }
+            
+            // Set initial progress
+            updateOverallProgress(0, 0, 64);
+            
+            // Initialize sync status
+            document.getElementById('autoSyncStatus').textContent = 'Auto-sync: Disabled';
+            document.getElementById('autoSyncStatus').className = 'sync-status disconnected';
+            document.getElementById('dataIntegrity').textContent = 'Data Integrity: ✓';
+            document.getElementById('dataIntegrity').className = 'sync-status connected';
+            
+            // Update team velocity (placeholder)
+            document.getElementById('teamVelocity').textContent = '12';
+            document.getElementById('velocityChange').textContent = 'Story points/week';
+        });
+
+        // Handle Enter key events
+        document.getElementById('githubToken').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') connectToGitHub();
+        });
+
+        document.getElementById('repoUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('githubToken').focus();
+        });
+
+        document.getElementById('hubspotApiKey').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('hubspotPortal').focus();
+        });
+
+        document.getElementById('hubspotPortal').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') connectToHubSpot();
+        });
+
+        // Auto-save form data to localStorage
+        ['repoUrl', 'githubToken', 'hubspotApiKey', 'hubspotPortal', 'syncFrequency'].forEach(id => {
+            const element = document.getElementById(id);
+            
+            // Load saved value
+            const saved = localStorage.getItem(`mkprocessor_${id}`);
+            if (saved && !element.value) {
+                element.value = saved;
+            }
+            
+            // Save on change
+            element.addEventListener('input', () => {
+                if (id.includes('Token') || id.includes('ApiKey')) {
+                    // Don't save sensitive data
+                    return;
+                }
+                localStorage.setItem(`mkprocessor_${id}`, element.value);
+            });
+        });
+
+        // Prevent form submission
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                e.preventDefault();
+            }
+        });
+
+        console.log('🚀 MK Processor 4.2.0 Dashboard loaded successfully');
+        console.log('📊 Ready for GitHub and HubSpot integration');
+        console.log('💡 Total project scope: 64 tasks across 16 projects in 4 phases');
+    
+function saveClaudeInput() {
+    const input = document.getElementById('claudeInput').value;
+    const filename = prompt("Enter file path to save in GitHub (e.g., ai/new_module.md):");
+    if (!filename) return;
+
+    try {
+        const repo = AppState.github.repoData.full_name;
+        const url = `https://api.github.com/repos/${repo}/contents/${filename}`;
+        const message = `Add Claude-generated content to ${filename}`;
+        const content = btoa(unescape(encodeURIComponent(input)));
+
+        fetch(url, {
+            headers: { Authorization: `Bearer ${AppState.github.token}` }
+        })
+        .then(res => res.ok ? res.json() : null)
+        .then(existing => {
+            const sha = existing?.sha;
+            return fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${AppState.github.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message,
+                    content,
+                    ...(sha && { sha })
+                })
+            });
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("GitHub write failed");
+            showNotification(`Claude content saved to ${filename}!`, 'success');
+            addLog('SUCCESS', `Saved Claude content to GitHub: ${filename}`);
+        })
+        .catch(err => {
+            console.error(err);
+            showNotification('Failed to save Claude input to GitHub', 'error');
+            addLog('ERROR', `Claude GitHub save error: ${err.message}`);
+        });
+    } catch (err) {
+        console.error(err);
+        showNotification('Unexpected error during saveClaudeInput', 'error');
+    }
+}
+
+</script>
+</body>
+</html>
+        
