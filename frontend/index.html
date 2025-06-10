@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MK Processor Dashboard</title>
+    
+    <!-- Local CSS Files -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/glassmorphism.css">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body data-theme="dark">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loader">
+            <i class="fas fa-microchip fa-spin"></i>
+            <p>Loading Dashboard...</p>
+        </div>
+    </div>
+
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="gradient-sphere sphere-1"></div>
+        <div class="gradient-sphere sphere-2"></div>
+        <div class="gradient-sphere sphere-3"></div>
+        <div class="grid-pattern"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header glass-morphism">
+            <div class="header-content">
+                <button class="hamburger-menu" id="hamburgerMenu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <h1 class="dashboard-title">
+                    <i class="fas fa-microchip"></i>
+                    MK Processor Dashboard
+                </h1>
+                <div class="header-actions">
+                    <button class="btn-icon" id="themeToggle" title="Toggle Theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="btn-icon" id="soundToggle" title="Toggle Sounds">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                    <button class="btn-icon" id="notificationBtn" title="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+                    <button class="btn-icon" id="refreshBtn" title="Refresh Dashboard">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <div class="user-profile">
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff" alt="User">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar glass-morphism" id="sidebar">
+            <div class="sidebar-header">
+                <h3>Navigation</h3>
+                <button class="close-sidebar" id="closeSidebar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-item active">
+                    <a href="#dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#projects">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>Projects</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#tasks">
+                        <i class="fas fa-tasks"></i>
+                        <span>Tasks</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#integrations" id="integrationsBtn">
+                        <i class="fas fa-plug"></i>
+                        <span>Integrations</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#reports" id="reportsBtn">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#settings" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" id="installFeatureBtn">
+                        <i class="fas fa-download"></i>
+                        <span>Install Feature</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <button class="btn-backup" id="backupBtn">
+                    <i class="fas fa-database"></i>
+                    Backup Database
+                </button>
+                <div class="connection-status">
+                    <span class="live-indicator connected">
+                        <span class="live-dot"></span> Live
+                    </span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card glass-morphism">
+                    <div class="stat-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-value" id="totalProjects">0</h3>
+                        <p class="stat-label">Total Projects</p>
+                    </div>
+                    <div class="stat-trend positive" id="projectsTrend">
+                        <i class="fas fa-arrow-up"></i> 12%
+                    </div>
+                </div>
+
+                <div class="stat-card glass-morphism">
+                    <div class="stat-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-value" id="activeTasks">0</h3>
+                        <p class="stat-label">Active Tasks</p>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i> 8%
+                    </div>
+                </div>
+
+                <div class="stat-card glass-morphism">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-value" id="completedTasks">0</h3>
+                        <p class="stat-label">Completed</p>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i> 23%
+                    </div>
+                </div>
+
+                <div class="stat-card glass-morphism">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-value" id="totalHours">0</h3>
+                        <p class="stat-label">Hours Tracked</p>
+                    </div>
+                    <div class="stat-trend negative">
+                        <i class="fas fa-arrow-down"></i> 5%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects and Tasks Section -->
+            <div class="content-grid">
+                <!-- Projects List -->
+                <div class="projects-section glass-morphism">
+                    <div class="section-header">
+                        <h2>Active Projects</h2>
+                        <button class="btn-primary" id="createProjectBtn">
+                            <i class="fas fa-plus"></i> New Project
+                        </button>
+                    </div>
+                    <div class="projects-list" id="projectsList">
+                        <!-- Projects will be dynamically loaded -->
+                        <div class="loading-placeholder">Loading projects...</div>
+                    </div>
+                </div>
+
+                <!-- Task Management -->
+                <div class="tasks-section glass-morphism">
+                    <div class="section-header">
+                        <h2>Recent Tasks</h2>
+                        <button class="btn-primary" id="createTaskBtn">
+                            <i class="fas fa-plus"></i> New Task
+                        </button>
+                    </div>
+                    <div class="tasks-list" id="tasksList">
+                        <!-- Tasks will be dynamically loaded -->
+                        <div class="loading-placeholder">Loading tasks...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Activity Feed -->
+            <div class="activity-feed glass-morphism">
+                <div class="section-header">
+                    <h2>Live Activity Feed</h2>
+                    <span class="live-indicator">
+                        <span class="live-dot"></span> Live
+                    </span>
+                </div>
+                <div class="activity-list" id="activityFeed">
+                    <!-- Activity items will be loaded via WebSocket -->
+                    <div class="activity-item">
+                        <div class="activity-icon activity-info">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="activity-content">
+                            <p class="activity-message">Waiting for real-time updates...</p>
+                            <span class="activity-time">Now</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Implementation Roadmap -->
+            <div class="roadmap-section glass-morphism">
+                <h2>Implementation Phases</h2>
+                <div class="phases-grid">
+                    <div class="phase-card completed">
+                        <div class="phase-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <h3>Phase 1: Foundation</h3>
+                        <p>Database setup, basic CRUD operations</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="phase-card in-progress">
+                        <div class="phase-icon">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                        <h3>Phase 2: Real-time</h3>
+                        <p>WebSocket integration, live updates</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div class="phase-card">
+                        <div class="phase-icon">
+                            <i class="fas fa-plug"></i>
+                        </div>
+                        <h3>Phase 3: Integrations</h3>
+                        <p>GitHub, HubSpot, third-party APIs</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 30%"></div>
+                        </div>
+                    </div>
+                    <div class="phase-card">
+                        <div class="phase-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Phase 4: Analytics</h3>
+                        <p>Advanced reporting and insights</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 10%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widget Area for Custom Features -->
+            <div id="widgetArea" class="widget-area">
+                <!-- Custom widgets will be added here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    
+    <!-- Create Project Modal -->
+    <div class="modal" id="createProjectModal">
+        <div class="modal-content glass-morphism">
+            <div class="modal-header">
+                <h2>Create New Project</h2>
+                <button class="close-modal" data-modal="createProjectModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="createProjectForm">
+                <div class="form-group">
+                    <label for="projectName">Project Name</label>
+                    <input type="text" id="projectName" required placeholder="Enter project name">
+                </div>
+                <div class="form-group">
+                    <label for="projectDescription">Description</label>
+                    <textarea id="projectDescription" rows="4" placeholder="Describe your project"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="projectStatus">Status</label>
+                    <select id="projectStatus">
+                        <option value="planning">Planning</option>
+                        <option value="active" selected>Active</option>
+                        <option value="on-hold">On Hold</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="projectDeadline">Deadline</label>
+                    <input type="date" id="projectDeadline">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-modal="createProjectModal">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Project Modal -->
+    <div class="modal" id="editProjectModal">
+        <div class="modal-content glass-morphism">
+            <div class="modal-header">
+                <h2>Edit Project</h2>
+                <button class="close-modal" data-modal="editProjectModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editProjectForm">
+                <input type="hidden" id="editProjectId">
+                <div class="form-group">
+                    <label for="editProjectName">Project Name</label>
+                    <input type="text" id="editProjectName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editProjectDescription">Description</label>
+                    <textarea id="editProjectDescription" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editProjectStatus">Status</label>
+                    <select id="editProjectStatus">
+                        <option value="planning">Planning</option>
+                        <option value="active">Active</option>
+                        <option value="on-hold">On Hold</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editProjectDeadline">Deadline</label>
+                    <input type="date" id="editProjectDeadline">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-modal="editProjectModal">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Details Modal -->
+    <div class="modal" id="projectDetailsModal">
+        <div class="modal-content glass-morphism">
+            <div class="modal-header">
+                <h2 id="projectDetailsName">Project Details</h2>
+                <button class="close-modal" data-modal="projectDetailsModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-group">
+                    <label>Description:</label>
+                    <p id="projectDetailsDescription">No description</p>
+                </div>
+                <div class="detail-group">
+                    <label>Status:</label>
+                    <p id="projectDetailsStatus">Active</p>
+                </div>
+                <div class="detail-group">
+                    <label>Deadline:</label>
+                    <p id="projectDetailsDeadline">No deadline</p>
+                </div>
+                <div class="detail-group">
+                    <label>Progress:</label>
+                    <p id="projectDetailsProgress">0%</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-modal="projectDetailsModal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Task Modal -->
+    <div class="modal" id="createTaskModal">
+        <div class="modal-content glass-morphism">
+            <div class="modal-header">
+                <h2>Create New Task</h2>
+                <button class="close-modal" data-modal="createTaskModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="createTaskForm">
+                <div class="form-group">
+                    <label for="taskTitle">Task Title</label>
+                    <input type="text" id="taskTitle" required placeholder="What needs to be done?">
+                </div>
+                <div class="form-group">
+                    <label for="taskProject">Project</label>
+                    <select id="taskProject">
+                        <option value="">Select Project</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="taskPriority">Priority</label>
+                    <select id="taskPriority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="taskAssignee">Assignee</label>
+                    <input type="text" id="taskAssignee" placeholder="Who will do this?">
+                </div>
+                <div class="form-group">
+                    <label for="taskDueDate">Due Date</label>
+                    <input type="datetime-local" id="taskDueDate">
+                </div>
+                <div class="form-group">
+                    <label for="taskDescription">Description</label>
+                    <textarea id="taskDescription" rows="3" placeholder="Additional details (optional)"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-modal="createTaskModal">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div class="modal" id="editTaskModal">
+        <div class="modal-content glass-morphism">
+            <div class="modal-header">
+                <h2>Edit Task</h2>
+                <button class="close-modal" data-modal="editTaskModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editTaskForm">
+                <input type="hidden" id="editTaskId">
+                <div class="form-group">
+                    <label for="editTaskTitle">Task Title</label>
+                    <input type="text" id="editTaskTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskProject">Project</label>
+                    <select id="editTaskProject">
+                        <option value="">Select Project</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskPriority">Priority</label>
+                    <select id="editTaskPriority">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editTaskAssignee">Assignee</label>
+                    <input type="text" id="editTaskAssignee">
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDueDate">Due Date</label>
+                    <input type="datetime-local" id="editTaskDueDate">
+                </div>
+                <div class="form-group">
+                    <label for="editTaskDescription">Description</label>
+                    <textarea id="editTaskDescription" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-modal="editTaskModal">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Install Feature Modal -->
+    <div class="modal" id="installFeatureModal">
+        <div class="modal-content glass-morphism">
+            <div class="modal-header">
+                <h2>Install New Feature</h2>
+                <button class="close-modal" data-modal="installFeatureModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="installFeatureForm">
+                <div class="form-group">
+                    <label for="featureName">Feature Name</label>
+                    <input type="text" id="featureName" required placeholder="Give your feature a name">
+                </div>
+                <div class="form-group">
+                    <label for="featureType">Feature Type</label>
+                    <select id="featureType">
+                        <option value="component">Component</option>
+                        <option value="integration">Integration</option>
+                        <option value="widget">Widget</option>
+                        <option value="utility">Utility</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="featureCode">Feature Code</label>
+                    <textarea id="featureCode" rows="12" placeholder="Paste your feature code here..." required></textarea>
+                </div>
+                <div class="feature-info">
+                    <p><i class="fas fa-info-circle"></i> The code will be validated before installation for security.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-modal="installFeatureModal">Cancel</button>
+                    <button type="submit" class="btn-primary">Install Feature</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Integrations Modal -->
+    <div class="modal" id="integrationsModal">
+        <div class="modal-content glass-morphism">
+            <div class="modal-header">
+                <h2>Integrations</h2>
+                <button class="close-modal" data-modal="integrationsModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="integrations-grid">
+                <div class="integration-card">
+                    <div class="integration-icon">
+                        <i class="fab fa-github"></i>
+                    </div>
+                    <h3>GitHub</h3>
+                    <p>Connect your GitHub repositories</p>
+                    <span class="integration-status" id="githubStatus">Disconnected</span>
+                    <button class="btn-primary" id="connectGithubBtn">Connect</button>
+                </div>
+                <div class="integration-card">
+                    <div class="integration-icon">
+                        <i class="fab fa-hubspot"></i>
+                    </div>
+                    <h3>HubSpot</h3>
+                    <p>Sync with your HubSpot CRM</p>
+                    <span class="integration-status" id="hubspotStatus">Disconnected</span>
+                    <button class="btn-primary" id="connectHubspotBtn">Connect</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-modal="integrationsModal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports Modal -->
+    <div class="modal" id="reportsModal">
+        <div class="modal-content glass-morphism">
+            <div class="modal-header">
+                <h2>Generate Report</h2>
+                <button class="close-modal" data-modal="reportsModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="generateReportForm">
+                <div class="form-group">
+                    <label for="reportType">Report Type</label>
+                    <select id="reportType">
+                        <option value="project-summary">Project Summary</option>
+                        <option value="task-analysis">Task Analysis</option>
+                        <option value="productivity">Productivity Report</option>
+                        <option value="timeline">Timeline Report</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reportStartDate">Start Date</label>
+                    <input type="date" id="reportStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="reportEndDate">End Date</label>
+                    <input type="date" id="reportEndDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="reportFormat">Format</label>
+                    <select id="reportFormat">
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                        <option value="csv">CSV</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-modal="reportsModal">Cancel</button>
+                    <button type="submit" class="btn-primary">Generate Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content glass-morphism">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="close-modal" data-modal="settingsModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="settings-content">
+                <div class="setting-group">
+                    <h3>Appearance</h3>
+                    <div class="setting-item">
+                        <label>Theme</label>
+                        <button class="btn-secondary" onclick="UI.toggleTheme()">Toggle Theme</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <h3>Notifications</h3>
+                    <div class="setting-item">
+                        <label>Sound Effects</label>
+                        <button class="btn-secondary" onclick="UI.toggleNotificationSound()">Toggle Sounds</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <h3>Database</h3>
+                    <div class="setting-item">
+                        <label>Auto Backup</label>
+                        <select id="autoBackupInterval">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="disabled">Disabled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-modal="settingsModal">Close</button>
+                <button type="button" class="btn-primary">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Search Modal -->
+    <div class="modal" id="quickSearchModal">
+        <div class="modal-content glass-morphism quick-search">
+            <div class="search-header">
+                <i class="fas fa-search"></i>
+                <input type="text" id="quickSearchInput" placeholder="Search projects, tasks, or commands..." autocomplete="off">
+                <kbd>ESC</kbd>
+            </div>
+            <div class="search-results" id="searchResults">
+                <!-- Results will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+</html>

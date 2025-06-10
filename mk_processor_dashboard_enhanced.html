@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 MK Processor 4.2.0 Dashboard</title>
+    <link href="css/styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white font-sans">
+    <div class="container mx-auto p-4">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold">🚀 MK Processor 4.2.0</h1>
+            <button id="hamburgerBtn" class="text-2xl"><i class="fas fa-bars"></i></button>
+        </header>
+
+        <!-- Hamburger Menu -->
+        <nav id="hamburgerMenu" class="hamburger-menu fixed top-0 right-0 h-full w-64 bg-gray-800 glassmorphic p-4 transform translate-x-full">
+            <button id="closeMenu" class="text-2xl mb-4"><i class="fas fa-times"></i></button>
+            <ul>
+                <li><a href="#" id="installFeatures" class="block py-2">Install Features</a></li>
+                <li><a href="#" id="backupDatabase" class="block py-2">Trigger Backup</a></li>
+                <li><a href="#" id="viewSettings" class="block py-2">Settings</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Integrations Section -->
+            <section class="glassmorphic p-6">
+                <h2 class="text-xl font-semibold mb-4">Integrations</h2>
+                <div class="mb-4">
+                    <h3>GitHub Repository</h3>
+                    <input id="repoUrl" type="text" placeholder="Repository URL" class="w-full p-2 bg-gray-800 rounded">
+                    <input id="githubToken" type="password" placeholder="GitHub Personal Access Token" class="w-full p-2 bg-gray-800 rounded mt-2">
+                    <button id="connectGitHub" class="mt-2 bg-blue-600 hover:bg-blue-700 p-2 rounded">Connect Repository</button>
+                </div>
+                <div>
+                    <h3>HubSpot CRM</h3>
+                    <input id="hubspotApiKey" type="password" placeholder="HubSpot Private App Token" class="w-full p-2 bg-gray-800 rounded">
+                    <input id="hubspotPortal" type="text" placeholder="Portal ID" class="w-full p-2 bg-gray-800 rounded mt-2">
+                    <select id="syncFrequency" class="w-full p-2 bg-gray-800 rounded mt-2">
+                        <option>Every 5 minutes</option>
+                        <option>Every 15 minutes</option>
+                        <option>Every 30 minutes</option>
+                        <option>Every hour</option>
+                    </select>
+                    <button id="connectHubSpot" class="mt-2 bg-blue-600 hover:bg-blue-700 p-2 rounded">Connect HubSpot</button>
+                </div>
+            </section>
+
+            <!-- Live Sync Status -->
+            <section class="glassmorphic p-6">
+                <h2 class="text-xl font-semibold mb-4">🔄 Live Sync Status</h2>
+                <p id="githubStatus">GitHub: Disconnected</p>
+                <p id="githubLastSync">Last sync: Never</p>
+                <p id="hubspotStatus">HubSpot: Disconnected</p>
+                <p id="hubspotLastSync">Last sync: Never</p>
+                <p id="autoSyncStatus">Auto-sync: Disabled</p>
+                <p id="nextSync">Next sync: N/A</p>
+                <p id="dataIntegrity">Data Integrity: ✓</p>
+                <p id="recordsSynced">Records synced: 0</p>
+            </section>
+
+            <!-- Statistics Dashboard -->
+            <section class="glassmorphic p-6">
+                <h2 class="text-xl font-semibold mb-4">📊 Statistics Dashboard</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p>Overall Progress</p>
+                        <svg class="progress-ring" viewBox="0 0 36 36">
+                            <path class="progress-ring__circle" stroke-dasharray="100, 100" d="M18 2.0845
+                                a 15.9155 15.9155 0 0 1 0 31.831
+                                a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        </svg>
+                        <p id="overallProgress">0%</p>
+                    </div>
+                    <div>
+                        <p>Tasks Completed</p>
+                        <p id="tasksCompleted">0/64</p>
+                    </div>
+                    <div>
+                        <p>Current Phase</p>
+                        <p id="currentPhase">Phase 1</p>
+                    </div>
+                    <div>
+                        <p>Months to Market</p>
+                        <p id="monthsToMarket">36</p>
+                    </div>
+                    <div>
+                        <p>Sprint Velocity</p>
+                        <p id="sprintVelocity">0</p>
+                    </div>
+                    <div>
+                        <p>Pipeline Value</p>
+                        <p id="pipelineValue">$0</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Project Progress -->
+            <section class="glassmorphic p-6 col-span-1 md:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">🎯 Project Progress</h2>
+                <div class="flex overflow-x-auto space-x-4">
+                    <div class="flex-none w-64">
+                        <h3>Foundation Setup</h3>
+                        <p>Development environment and core infrastructure</p>
+                        <button class="startProject" data-project="foundation">Start Project</button>
+                    </div>
+                    <div class="flex-none w-64">
+                        <h3>MVP Launch</h3>
+                        <p>Enterprise web scraping platform</p>
+                        <button class="startProject" data-project="mvp">Start Project</button>
+                    </div>
+                    <div class="flex-none w-64">
+                        <h3>Market Traction</h3>
+                        <p>First 100 enterprise customers</p>
+                        <button class="startProject" data-project="traction">Start Project</button>
+                    </div>
+                    <div class="flex-none w-64">
+                        <h3>Dual Platform</h3>
+                        <p>Consumer platform launch</p>
+                        <button class="startProject" data-project="dual">Start Project</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="glassmorphic p-6 col-span-1 md:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">⚡ Quick Actions</h2>
+                <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+                    <button id="forceSync" class="bg-blue-600 hover:bg-blue-700 p-2 rounded">🔄 Force Sync All</button>
+                    <button id="generateReport" class="bg-blue-600 hover:bg-blue-700 p-2 rounded">📊 Generate Report</button>
+                    <button id="updateHubSpot" class="bg-blue-600 hover:bg-blue-700 p-2 rounded">📈 Update HubSpot</button>
+                    <button id="exportData" class="bg-blue-600 hover:bg-blue-700 p-2 rounded">💾 Export Data</button>
+                    <button id="scheduleDemo" class="bg-blue-600 hover:bg-blue-700 p-2 rounded">🎥 Schedule Demo</button>
+                    <button id="createTask" class="bg-blue-600 hover:bg-blue-700 p-2 rounded">✅ Create Task</button>
+                </div>
+            </section>
+
+            <!-- Phase Tracking -->
+            <section class="glassmorphic p-6 col-span-1 md:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">📅 Phase Tracking</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <h3>1. Foundation</h3>
+                        <p>Months 1-4 | Enterprise MVP</p>
+                        <p id="phase1Progress">0% Complete</p>
+                        <ul>
+                            <li><input type="checkbox" id="task1"> Development Environment</li>
+                            <li><input type="checkbox" id="task2"> Web Scraping MVP</li>
+                            <li><input type="checkbox" id="task3"> AI Integration</li>
+                            <li><input type="checkbox" id="task4"> Frontend Dashboard</li>
+                        </ul>
+                        <button class="viewTasks" data-phase="1">View Tasks</button>
+                    </div>
+                    <div>
+                        <h3>2. Market Traction</h3>
+                        <p>Months 4- SUPPORT-8 | Scale & PMF</p>
+                        <p id="phase2Progress">0% Complete</p>
+                        <ul>
+                            <li><input type="checkbox" id="task5"> Real-time Collaboration</li>
+                            <li><input type="checkbox" id="task6"> ML Analytics</li>
+                            <li><input type="checkbox" id="task7"> Plugin Marketplace</li>
+                            <li><input type="checkbox" id="task8"> Enterprise Features</li>
+                        </ul>
+                        <button class="viewTasks" data-phase="2">View Tasks</button>
+                    </div>
+                    <div>
+                        <h3>3. Dual Platform</h3>
+                        <p>Months 8-12 | Consumer Launch</p>
+                        <p id="phase3Progress">0% Complete</p>
+                        <ul>
+                            <li><input type="checkbox" id="task9"> Consumer Platform</li>
+                            <li><input type="checkbox" id="task10"> Rewards Engine</li>
+                            <li><input type="checkbox" id="task11"> Mobile App</li>
+                            <li><input type="checkbox" id="task12"> Cross-Platform Intelligence</li>
+                        </ul>
+                        <button class="viewTasks" data-phase="3">View Tasks</button>
+                    </div>
+                    <div>
+                        <h3>4. Market Dominance</h3>
+                        <p>Months 12-36 | Global Scale</p>
+                        <p id="phase4Progress">0% Complete</p>
+                        <ul>
+                            <li><input type="checkbox" id="task13"> Global Expansion</li>
+                            <li><input type="checkbox" id="task14"> Ecosystem Platform</li>
+                            <li><input type="checkbox" id="task15"> IPO Readiness</li>
+                        </ul>
+                        <button class="viewTasks" data-phase="4">View Tasks</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Activity Logs -->
+            <section class="glassmorphic p-6 col-span-1 md:col-span-3">
+                <h2 class="text-xl font-semibold mb-4">📋 Activity Logs</h2>
+                <div id="activityLogs" class="h-40 overflow-y-auto"></div>
+            </section>
+
+            <!-- Modal for Task Creation -->
+            <div id="taskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden modal">
+                <div class="bg-gray-800 p-6 rounded-lg max-w-lg mx-auto mt-20 glassmorphic">
+                    <h2 class="text-xl font-semibold mb-4">Create New Task</h2>
+                    <input id="taskName" type="text" placeholder="Task Name" class="w-full p-2 bg-gray-700 rounded mb-2">
+                    <textarea id="taskDescription" placeholder="Task Description" class="w-full p-2 bg-gray-700 rounded mb-2"></textarea>
+                    <select id="taskPhase" class="w-full p-2 bg-gray-700 rounded mb-2">
+                        <option value="1">Foundation</option>
+                        <option value="2">Market Traction</option>
+                        <option value="3">Dual Platform</option>
+                        <option value="4">Market Dominance</option>
+                    </select>
+                    <button id="saveTask" class="bg-blue-600 hover:bg-blue-700 p-2 rounded">Save Task</button>
+                    <button id="cancelTask" class="bg-gray-600 hover:bg-gray-700 p-2 rounded ml-2">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Modal for Project Details -->
+            <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden modal">
+                <div class="bg-gray-800 p-6 rounded-lg max-w-lg mx-auto mt-20 glassmorphic">
+                    <h2 class="text-xl font-semibold mb-4" id="projectModalTitle"></h2>
+                    <p id="projectModalDescription"></p>
+                    <p id="projectModalProgress"></p>
+                    <ul id="projectModalTasks"></ul>
+                    <button id="closeProjectModal" class="bg-gray-600 hover:bg-gray-700 p-2 rounded mt-4">Close</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // App State
+        const AppState = {
+            github: { connected: false, token: '', repoData: {} },
+            hubspot: { connected: false, apiKey: '', portalId: '' },
+            websocket: null,
+            tasks: [],
+            projects: []
+        };
+
+        // WebSocket Connection
+        function initWebSocket() {
+            AppState.websocket = new WebSocket('ws://localhost:8080');
+            AppState.websocket.onopen = () => addLog('INFO', 'WebSocket connected');
+            AppState.websocket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'task_update') updateTaskUI(data.task);
+                if (data.type === 'project_update') updateProjectUI(data.project);
+                if (data.type === 'log') addLog(data.level, data.message);
+            };
+            AppState.websocket.onclose = () => addLog('ERROR', 'WebSocket disconnected');
+        }
+
+        // Database Operations
+        async function fetchTasks() {
+            try {
+                const response = await fetch('/api/tasks');
+                if (!response.ok) throw new Error('Failed to fetch tasks');
+                AppState.tasks = await response.json();
+                updateTaskUI();
+            } catch (err) {
+                addLog('ERROR', `Fetch tasks failed: ${err.message}`);
+                showNotification('Failed to fetch tasks', 'error');
+            }
+        }
+
+        async function createTask(task) {
+            try {
+                const response = await fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(task)
+                });
+                if (!response.ok) throw new Error('Failed to create task');
+                const newTask = await response.json();
+                AppState.tasks.push(newTask);
+                updateTaskUI();
+                addLog('SUCCESS', `Task ${newTask.name} created`);
+                showNotification('Task created successfully!', 'success');
+            } catch (err) {
+                addLog('ERROR', `Create task failed: ${err.message}`);
+                showNotification('Failed to create task', 'error');
+            }
+        }
+
+        async function updateTask(taskId, updates) {
+            try {
+                const response = await fetch(`/api/tasks/${taskId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                });
+                if (!response.ok) throw new Error('Failed to update task');
+                const updatedTask = await response.json();
+                AppState.tasks = AppState.tasks.map(t => t.id === taskId ? updatedTask : t);
+                updateTaskUI();
+                addLog('SUCCESS', `Task ${updatedTask.name} updated`);
+                showNotification('Task updated successfully!', 'success');
+            } catch (err) {
+                addLog('ERROR', `Update task failed: ${err.message}`);
+                showNotification('Failed to update task', 'error');
+            }
+        }
+
+        async function deleteTask(taskId) {
+            try {
+                const response = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error('Failed to delete task');
+                AppState.tasks = AppState.tasks.filter(t => t.id !== taskId);
+                updateTaskUI();
+                addLog('SUCCESS', `Task ${taskId} deleted`);
+                showNotification('Task deleted successfully!', 'success');
+            } catch (err) {
+                addLog('ERROR', `Delete task failed: ${err.message}`);
+                showNotification('Failed to delete task', 'error');
+            }
+        }
+
+        async function fetchProjects() {
+            try {
+                const response = await fetch('/api/projects');
+                if (!response.ok) throw new Error('Failed to fetch projects');
+                AppState.projects = await response.json();
+                updateProjectUI();
+            } catch (err) {
+                addLog('ERROR', `Fetch projects failed: ${err.message}`);
+                showNotification('Failed to fetch projects', 'error');
+            }
+        }
+
+        async function createProject(project) {
+            try {
+                const response = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(project)
+                });
+                if (!response.ok) throw new Error('Failed to create project');
+                const newProject = await response.json();
+                AppState.projects.push(newProject);
+                updateProjectUI();
+                addLog('SUCCESS', `Project ${newProject.title} created`);
+                showNotification('Project created successfully!', 'success');
+            } catch (err) {
+                addLog('ERROR', `Create project failed: ${err.message}`);
+                showNotification('Failed to create project', 'error');
+            }
+        }
+
+        async function createHubSpotDeal(projectId) {
+            if (!AppState.hubspot.connected) {
+                showNotification('HubSpot not connected. Please connect first.', 'warning');
+                return;
+            }
+            try {
+                const project = AppState.projects.find(p => p.id === projectId);
+                const response = await fetch(`https://api.hubapi.com/crm/v3/objects/deals?hapikey=${AppState.hubspot.apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        properties: {
+                            dealname: project.title,
+                            amount: '0',
+                            dealstage: 'presentationscheduled'
+                        }
+                    })
+                });
+                if (!response.ok) throw new Error('Failed to create HubSpot deal');
+                addLog('SUCCESS', `HubSpot deal created for ${project.title}`);
+                showNotification(`HubSpot deal created for ${project.title}!`, 'success');
+            } catch (err) {
+                addLog('ERROR', `HubSpot deal creation failed: ${err.message}`);
+                showNotification('Failed to create HubSpot deal', 'error');
+            }
+        }
+
+        async function saveClaudeInput() {
+            const input = prompt("Enter Claude-generated content:");
+            const filename = prompt("Enter file path to save in GitHub (e.g., ai/new_module.md):");
+            if (!input || !filename) return;
+
+            try {
+                const repo = AppState.github.repoData.full_name;
+                const url = `https://api.github.com/repos/${repo}/contents/${filename}`;
+                const message = `Add Claude-generated content to ${filename}`;
+                const content = btoa(unescape(encodeURIComponent(input)));
+
+                const existing = await fetch(url, {
+                    headers: { Authorization: `Bearer ${AppState.github.token}` }
+                }).then(res => res.ok ? res.json() : null);
+
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${AppState.github.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message,
+                        content,
+                        ...(existing?.sha && { sha: existing.sha })
+                    })
+                });
+                if (!response.ok) throw new Error('GitHub write failed');
+                addLog('SUCCESS', `Saved Claude content to GitHub: ${filename}`);
+                showNotification(`Claude content saved to ${filename}!`, 'success');
+            } catch (err) {
+                addLog('ERROR', `Claude GitHub save error: ${err.message}`);
+                showNotification('Failed to save Claude input to GitHub', 'error');
+            }
+        }
+
+        // GitHub Integration
+        async function connectToGitHub() {
+            const token = document.getElementById('githubToken').value;
+            const repoUrl = document.getElementById('repoUrl').value;
+            try {
+                const repoPath = repoUrl.split('github.com/')[1];
+                if (!repoPath) throw new Error('Invalid GitHub repository URL');
+                const response = await fetch(`https://api.github.com/repos/${repoPath}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('GitHub connection failed');
+                AppState.github = { connected: true, token, repoData: await response.json() };
+                document.getElementById('githubStatus').textContent = 'GitHub: Connected';
+                document.getElementById('githubLastSync').textContent = `Last sync: ${new Date().toLocaleString()}`;
+                addLog('SUCCESS', 'Connected to GitHub');
+                showNotification('GitHub connected successfully!', 'success');
+            } catch (err) {
+                addLog('ERROR', `GitHub connection failed: ${err.message}`);
+                showNotification('Failed to connect to GitHub', 'error');
+            }
+        }
+
+        // HubSpot Integration
+        async function connectToHubSpot() {
+            const apiKey = document.getElementById('hubspotApiKey').value;
+            const portalId = document.getElementById('hubspotPortal').value;
+            try {
+                const response = await fetch(`https://api.hubapi.com/crm/v3/objects/contacts?hapikey=${apiKey}&portalId=${portalId}`);
+                if (!response.ok) throw new Error('HubSpot connection failed');
+                AppState.hubspot = { connected: true, apiKey, portalId };
+                document.getElementById('hubspotStatus').textContent = 'HubSpot: Connected';
+                document.getElementById('hubspotLastSync').textContent = `Last sync: ${new Date().toLocaleString()}`;
+                addLog('SUCCESS', 'Connected to HubSpot');
+                showNotification('HubSpot connected successfully!', 'success');
+            } catch (err) {
+                addLog('ERROR', `HubSpot connection failed: ${err.message}`);
+                showNotification('Failed to connect to HubSpot', 'error');
+            }
+        }
+
+        // Update UI Functions
+        function updateTaskUI(task) {
+            const tasks = task ? [task] : AppState.tasks;
+            tasks.forEach(t => {
+                const checkbox = document.getElementById(`task${t.id}`);
+                if (checkbox) {
+                    checkbox.checked = t.completed;
+                    checkbox.nextSibling.textContent = ` ${t.name}`; // Update task name
+                }
+            });
+            updateProgress();
+        }
+
+        function updateProjectUI(project) {
+            const projects = project ? [project] : AppState.projects;
+            projects.forEach(p => {
+                const progress = document.getElementById(`phase${p.phase}Progress`);
+                if (progress) progress.textContent = `${p.progress}% Complete`;
+            });
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const completed = AppState.tasks.filter(t => t.completed).length;
+            const total = AppState.tasks.length;
+            const progress = total ? (completed / total * 100).toFixed(0) : 0;
+            document.getElementById('overallProgress').textContent = `${progress}%`;
+            document.getElementById('tasksCompleted').textContent = `${completed}/${total}`;
+            const circle = document.querySelector('.progress-ring__circle');
+            const offset = 100 - progress;
+            circle.setAttribute('stroke-dasharray', `${progress}, 100`);
+            document.getElementById('sprintVelocity').textContent = total ? (completed * 2).toFixed(0) : 0; // Example velocity calculation
+        }
+
+        // Notifications
+        function showNotification(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast fixed bottom-4 right-4 p-4 rounded ${type === 'success' ? 'bg-green-600' : type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Activity Logs
+        function addLog(level, message) {
+            const log = document.createElement('p');
+            log.textContent = `[${new Date().toLocaleString()}] [${level}] ${message}`;
+            document.getElementById('activityLogs').prepend(log);
+        }
+
+        // Report Generation
+        function generateReport() {
+            const report = {
+                tasks: AppState.tasks,
+                projects: AppState.projects,
+                timestamp: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mk_processor_report.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            addLog('SUCCESS', 'Report generated');
+            showNotification('Report generated successfully!', 'success');
+        }
+
+        // Backup System
+        async function triggerBackup() {
+            try {
+                const response = await fetch('/api/backup', { method: 'POST' });
+                if (!response.ok) throw new Error('Backup failed');
+                addLog('SUCCESS', 'Database backup triggered');
+                showNotification('Backup triggered successfully!', 'success');
+            } catch (err) {
+                addLog('ERROR', `Backup failed: ${err.message}`);
+                showNotification('Failed to trigger backup', 'error');
+            }
+        }
+
+        // Install Features
+        function installFeatures() {
+            const code = prompt('Enter feature code to install:');
+            if (code) {
+                try {
+                    eval(code); // Note: Use with caution in production
+                    addLog('SUCCESS', 'Feature installed');
+                    showNotification('Feature installed successfully!', 'success');
+                } catch (err) {
+                    addLog('ERROR', `Feature installation failed: ${err.message}`);
+                    showNotification('Feature installation failed', 'error');
+                }
+            }
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            initWebSocket();
+            fetchTasks();
+            fetchProjects();
+            addLog('INFO', 'MK Processor 4.2.0 Dashboard initialized');
+
+            document.getElementById('hamburgerBtn').addEventListener('click', () => {
+                document.getElementById('hamburgerMenu').classList.toggle('open');
+            });
+
+            document.getElementById('closeMenu').addEventListener('click', () => {
+                document.getElementById('hamburgerMenu').classList.remove('open');
+            });
+
+            document.getElementById('connectGitHub').addEventListener('click', connectToGitHub);
+            document.getElementById('connectHubSpot').addEventListener('click', connectToHubSpot);
+            document.getElementById('forceSync').addEventListener('click', () => {
+                addLog('INFO', 'Force sync triggered');
+                showNotification('Sync triggered!', 'success');
+            });
+            document.getElementById('generateReport').addEventListener('click', generateReport);
+            document.getElementById('updateHubSpot').addEventListener('click', () => {
+                const projectId = prompt('Enter project ID for HubSpot deal:');
+                if (projectId) createHubSpotDeal(projectId);
+            });
+            document.getElementById('exportData').addEventListener('click', saveClaudeInput);
+            document.getElementById('scheduleDemo').addEventListener('click', () => {
+                addLog('INFO', 'Demo scheduled');
+                showNotification('Demo scheduled!', 'success');
+            });
+            document.getElementById('createTask').addEventListener('click', () => {
+                document.getElementById('taskModal').classList.remove('hidden');
+            });
+            document.getElementById('saveTask').addEventListener('click', () => {
+                const task = {
+                    name: document.getElementById('taskName').value,
+                    description: document.getElementById('taskDescription').value,
+                    phase: document.getElementById('taskPhase').value,
+                    completed: false
+                };
+                createTask(task);
+                document.getElementById('taskModal').classList.add('hidden');
+            });
+            document.getElementById('cancelTask').addEventListener('click', () => {
+                document.getElementById('taskModal').classList.add('hidden');
+            });
+            document.getElementById('backupDatabase').addEventListener('click', triggerBackup);
+            document.getElementById('installFeatures').addEventListener('click', installFeatures);
+
+            document.querySelectorAll('.startProject').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const projectId = btn.dataset.project;
+                    createProject({ id: projectId, title: projectId.charAt(0).toUpperCase() + projectId.slice(1), phase: 1, progress: 25 });
+                });
+            });
+
+            document.querySelectorAll('.viewTasks').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const phase = btn.dataset.phase;
+                    const tasks = AppState.tasks.filter(t => t.phase === phase);
+                    document.getElementById('projectModalTitle').textContent = `Phase ${phase} Tasks`;
+                    document.getElementById('projectModalDescription').textContent = `Tasks for phase ${phase}`;
+                    document.getElementById('projectModalProgress').textContent = `Progress: ${AppState.projects.find(p => p.phase === phase)?.progress || 0}%`;
+                    const taskList = document.getElementById('projectModalTasks');
+                    taskList.innerHTML = tasks.map(t => `<li><input type="checkbox" ${t.completed ? 'checked' : ''} data-task-id="${t.id}"> ${t.name}</li>`).join('');
+                    document.getElementById('projectModal').classList.remove('hidden');
+                    taskList.querySelectorAll('input').forEach(cb => {
+                        cb.addEventListener('change', () => updateTask(cb.dataset.taskId, { completed: cb.checked }));
+                    });
+                });
+            });
+
+            document.getElementById('closeProjectModal').addEventListener('click', () => {
+                document.getElementById('projectModal').classList.add('hidden');
+            });
+
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    updateTask(cb.id.replace('task', ''), { completed: cb.checked });
+                });
+            });
+
+            // Auto-save form data
+            ['repoUrl', 'githubToken', 'hubspotApiKey', 'hubspotPortal', 'syncFrequency'].forEach(id => {
+                const element = document.getElementById(id);
+                const saved = localStorage.getItem(`mkprocessor_${id}`);
+                if (saved && !element.value) element.value = saved;
+                element.addEventListener('input', () => {
+                    if (!id.includes('Token') && !id.includes('ApiKey')) {
+                        localStorage.setItem(`mkprocessor_${id}`, element.value);
+                    }
+                });
+            });
+
+            // Handle Enter key events
+            document.getElementById('githubToken').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') connectToGitHub();
+            });
+            document.getElementById('repoUrl').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') document.getElementById('githubToken').focus();
+            });
+            document.getElementById('hubspotApiKey').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') document.getElementById('hubspotPortal').focus();
+            });
+            document.getElementById('hubspotPortal').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') connectToHubSpot();
+            });
+
+            // Prevent form submission
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        console.log('🚀 MK Processor 4.2.0 Dashboard loaded successfully');
+        console.log('📊 Ready for GitHub and HubSpot integration');
+        console.log('💡 Total project scope: 64 tasks across 16 projects in 4 phases');
+    </script>
+</body>
+</html>
