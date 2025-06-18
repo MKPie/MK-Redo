@@ -1461,7 +1461,7 @@
                 </div>
                 <div class="next-task-suggestion">
                     <strong>🎯 Backend Integration Status:</strong>
-                    <div id="nextTaskSuggestion">Establishing WebSocket connection to ws://localhost:3002/ws/dashboard_*</div>
+                    <div id="nextTaskSuggestion">Establishing WebSocket connection to wss://mk-redo.onrender.com/ws/dashboard_*</div>
                     <button class="integration-btn" style="margin-top: 8px;" onclick="showConnectionDetails()">View Details</button>
                 </div>
                 <div class="task-dependency-chain">
@@ -1710,8 +1710,8 @@
             },
             backend: {
                 connected: false,
-                url: 'http://localhost:3002',  // Updated to port 3002
-                wsUrl: 'ws://localhost:3002',
+                url: 'https://mk-redo.onrender.com',  // Updated to port 3002
+                wsUrl: 'wss://mk-redo.onrender.com',
                 clientId: 'dashboard_' + Math.random().toString(36).substr(2, 9),
                 lastSync: null,
                 fallbackPolling: false
@@ -2231,7 +2231,7 @@ Check that your FastAPI backend is running on port 3002. Use the "🔌 Test Conn
                 if (wsConnected) {
                     return `🚀 **WebSocket Connected!**
                     
-📡 **Endpoint:** ws://localhost:3002/ws/${clientId}
+📡 **Endpoint:** wss://mk-redo.onrender.com/ws/${clientId}
 💗 **Heartbeat:** Active
 🔄 **Auto-reconnect:** Enabled
 📊 **Message Types:** progress_update, job_created, job_updated, job_completed
@@ -2240,7 +2240,7 @@ Real-time communication is active! Jobs and progress updates will appear instant
                 } else {
                     return `🔌 **WebSocket Status:** Disconnected
                     
-📡 **Target:** ws://localhost:3002/ws/${clientId}
+📡 **Target:** wss://mk-redo.onrender.com/ws/${clientId}
 🔄 **Retry Count:** ${backendManager.retryCount}/${backendManager.maxRetries}
 ⏰ **Fallback:** ${AppState.backend.fallbackPolling ? 'Polling every 5s' : 'Disabled'}
 
@@ -2420,7 +2420,7 @@ The Ultimate Scraper project is currently ${progress}% complete with ${completed
 
 ### FastAPI Backend Integration
 - **Backend URL:** ${AppState.backend.url}
-- **WebSocket Endpoint:** ws://localhost:3002/ws/{client_id}
+- **WebSocket Endpoint:** wss://mk-redo.onrender.com/ws/{client_id}
 - **Health Check:** /health
 - **Progress API:** /api/progress
 - **Jobs API:** /api/jobs
