@@ -1,68 +1,60 @@
-﻿version: '3.9'
+﻿version: '3.8'
 
 services:
   backend:
     build: ./backend
-    container_name: mk-backend
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://mkuser:mkpass123@postgres:5432/mkprocessor
+      - DATABASE_URL=postgresql://mkuser:mkpass@postgres:5432/mkprocessor
       - REDIS_URL=redis://redis:6379
     depends_on:
       - postgres
       - redis
     volumes:
-      - ./data:/app/data
-    restart: always
-
-  postgres:
-    image: postgres:15-alpine
-    container_name: mk-postgres
-    environment:
-      - POSTGRES_DB=mkprocessor
-      - POSTGRES_USER=mkuser
-      - POSTGRES_PASSWORD=mkpass123
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    restart: always
-
-  redis:
-    image: redis:7-alpine
-    container_name: mk-redis
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    restart: always
+      - ./backend:/app
+      - ./data:/data
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
     build: ./frontend
-    container_name: mk-frontend
     ports:
-      - "3000:3000"
+      - "3001:80" # Changed from 3000:80
     depends_on:
       - backend
     environment:
       - REACT_APP_API_URL=http://localhost:8000
-    restart: always
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: mkuser
+      POSTGRES_PASSWORD: mkpass
+      POSTGRES_DB: mkprocessor
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 
   pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: mk-pgadmin
+    image: dpage/pgadmin4
     environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
-      - PGADMIN_DEFAULT_PASSWORD=admin
+      PGADMIN_DEFAULT_EMAIL: admin@mkprocessor.com
+      PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
     depends_on:
       - postgres
-    restart: always
 
 volumes:
   postgres_data:
   redis_data:
-

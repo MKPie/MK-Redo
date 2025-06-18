@@ -1,0 +1,382 @@
+﻿from fastapi import FastAPI, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Optional
+from datetime import datetime
+import asyncio
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="MK Processor Backend")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+jobs_db = []
+
+class JobCreate(BaseModel):
+    models: List[str]
+    prefix: Optional[str] = ""
+    name: Optional[str] = "ULTRATHINK Scrape"
+
+@app.get("/")
+async def root():
+    return {"message": "MK Processor Backend", "status": "running"}
+
+@app.get("/health")
+async def health():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "total_jobs": len(jobs_db),
+        "scraper_available": False
+    }
+
+@app.get("/jobs")
+async def get_jobs():
+    return jobs_db
+
+@app.post("/jobs")
+async def create_job(job: JobCreate, background_tasks: BackgroundTasks):
+    job_id = f"job_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    
+    job_data = {
+        "id": job_id,
+        "name": job.name,
+        "models": job.models,
+        "prefix": job.prefix,
+        "status": "pending",
+        "progress": 0,
+        "created_at": datetime.now().isoformat()
+    }
+    
+    jobs_db.append(job_data)
+    background_tasks.add_task(run_job, job_id, job.models)
+    
+    return job_data
+
+@app.get("/jobs/{job_id}")
+async def get_job(job_id: str):
+    for job in jobs_db:
+        if job["id"] == job_id:
+            return job
+    return {"error": "Job not found"}
+
+@app.get("/progress")
+async def get_progress():
+    total = len(jobs_db)
+    completed = sum(1 for j in jobs_db if j["status"] == "completed")
+    running = sum(1 for j in jobs_db if j["status"] == "running")
+    
+    return {
+        "total_jobs": total,
+        "completed_jobs": completed,
+        "running_jobs": running,
+        "failed_jobs": total - completed - running,
+        "success_rate": (completed / total * 100) if total > 0 else 0,
+        "scraper_available": False
+    }
+
+async def run_job(job_id: str, models: List[str]):
+    logger.info(f"Starting job {job_id}")
+    
+    for job in jobs_db:
+        if job["id"] == job_id:
+            job["status"] = "running"
+            break
+    
+    for i, model in enumerate(models):
+        await asyncio.sleep(2)
+        progress = int((i + 1) / len(models) * 100)
+        
+        for job in jobs_db:
+            if job["id"] == job_id:
+                job["progress"] = progress
+                break
+        
+        logger.info(f"Processed {model} - {progress}%")
+    
+    for job in jobs_db:
+        if job["id"] == job_id:
+            job["status"] = "completed"
+            job["progress"] = 100
+            job["completed_at"] = datetime.now().isoformat()
+            break
+    
+    logger.info(f"Job {job_id} completed")
+
+from fastapi import WebSocket, WebSocketDisconnect
+
+websocket_connections = []
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    websocket_connections.append(websocket)
+    logger.info(f"WebSocket connected. Total: {len(websocket_connections)}")
+    
+    try:
+        await websocket.send_json({
+            "type": "connected",
+            "data": {"jobs": len(jobs_db)}
+        })
+        
+        while True:
+            data = {
+                "type": "heartbeat",
+                "timestamp": datetime.now().isoformat(),
+                "jobs": len(jobs_db),
+                "active": sum(1 for j in jobs_db if j["status"] == "running")
+            }
+            await websocket.send_json(data)
+            await asyncio.sleep(5)
+            
+    except WebSocketDisconnect:
+        if websocket in websocket_connections:
+            websocket_connections.remove(websocket)
+        logger.info(f"WebSocket disconnected. Total: {len(websocket_connections)}")
+
+# =============================================================================
+# SCRAPER INTEGRATION - Added by PowerShell automation
+# =============================================================================
+
+# Import scraper service
+try:
+    from scraper_service import scraper_service
+    SCRAPER_AVAILABLE = True
+    print("✅ Scraper service imported successfully")
+except Exception as e:
+    SCRAPER_AVAILABLE = False
+    print(f"❌ Scraper service import failed: {e}")
+
+# Add jobs functionality
+from typing import List, Dict, Optional
+from datetime import datetime
+from pydantic import BaseModel
+import asyncio
+from fastapi import BackgroundTasks
+import json
+
+# In-memory job storage (upgrade to database later)
+jobs_db = []
+
+class JobCreate(BaseModel):
+    models: List[str]
+    prefix: Optional[str] = ""
+    name: Optional[str] = "MK Processor Scrape"
+
+class JobStatus(BaseModel):
+    id: str
+    name: str
+    models: List[str]
+    prefix: str
+    status: str  # pending, running, completed, failed
+    progress: int  # 0-100
+    results: Optional[Dict] = None
+    created_at: str
+    completed_at: Optional[str] = None
+
+@app.post("/jobs", response_model=JobStatus)
+async def create_job(job: JobCreate, background_tasks: BackgroundTasks):
+    """Create a new scraping job"""
+    job_id = f"job_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
+    
+    job_data = {
+        "id": job_id,
+        "name": job.name,
+        "models": job.models,
+        "prefix": job.prefix,
+        "status": "pending",
+        "progress": 0,
+        "results": None,
+        "created_at": datetime.now().isoformat(),
+        "completed_at": None
+    }
+    
+    jobs_db.append(job_data)
+    
+    # Start scraping in background
+    background_tasks.add_task(run_scraper_job, job_id, job.models, job.prefix)
+    
+    return job_data
+
+@app.get("/jobs")
+async def get_jobs():
+    """Get all jobs"""
+    return {"jobs": jobs_db, "total": len(jobs_db)}
+
+@app.get("/jobs/{job_id}")
+async def get_job(job_id: str):
+    """Get specific job by ID"""
+    for job in jobs_db:
+        if job["id"] == job_id:
+            return job
+    return {"error": "Job not found", "job_id": job_id}
+
+@app.delete("/jobs/{job_id}")
+async def delete_job(job_id: str):
+    """Delete a job"""
+    for i, job in enumerate(jobs_db):
+        if job["id"] == job_id:
+            deleted_job = jobs_db.pop(i)
+            return {"message": "Job deleted", "job": deleted_job}
+    return {"error": "Job not found", "job_id": job_id}
+
+async def run_scraper_job(job_id: str, models: List[str], prefix: str):
+    """Run scraper job in background"""
+    try:
+        # Update job status to running
+        for job in jobs_db:
+            if job["id"] == job_id:
+                job["status"] = "running"
+                job["progress"] = 5
+                break
+        
+        # Call scraper service
+        if SCRAPER_AVAILABLE:
+            results = await scraper_service.scrape_models(job_id, models, prefix)
+        else:
+            # Fallback simulation
+            await asyncio.sleep(2)
+            results = {
+                "success": False,
+                "error": "Scraper not available - using simulation",
+                "successful": 0,
+                "failed": len(models),
+                "results": [],
+                "errors": [{"model": m, "error": "Scraper not available"} for m in models]
+            }
+        
+        # Update job with results
+        for job in jobs_db:
+            if job["id"] == job_id:
+                job["status"] = "completed" if results.get("success") else "failed"
+                job["progress"] = 100
+                job["results"] = results
+                job["completed_at"] = datetime.now().isoformat()
+                break
+                
+    except Exception as e:
+        # Handle job failure
+        for job in jobs_db:
+            if job["id"] == job_id:
+                job["status"] = "failed"
+                job["progress"] = 0
+                job["results"] = {"error": str(e)}
+                job["completed_at"] = datetime.now().isoformat()
+                break
+
+# Update health check to include scraper status
+@app.get("/health")
+async def health_check():
+    """Enhanced health check with scraper status"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "scraper_available": SCRAPER_AVAILABLE,
+        "total_jobs": len(jobs_db),
+        "active_jobs": len([j for j in jobs_db if j["status"] == "running"]),
+        "completed_jobs": len([j for j in jobs_db if j["status"] == "completed"]),
+        "failed_jobs": len([j for j in jobs_db if j["status"] == "failed"])
+    }
+
+# WebSocket for real-time updates
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket endpoint for real-time job updates"""
+    await websocket.accept()
+    try:
+        while True:
+            # Send current job status
+            active_jobs = [j for j in jobs_db if j["status"] == "running"]
+            recent_jobs = sorted(jobs_db, key=lambda x: x["created_at"], reverse=True)[:10]
+            
+            data = {
+                "timestamp": datetime.now().isoformat(),
+                "active_jobs": len(active_jobs),
+                "total_jobs": len(jobs_db),
+                "recent_jobs": recent_jobs,
+                "scraper_available": SCRAPER_AVAILABLE
+            }
+            
+            await websocket.send_json(data)
+            await asyncio.sleep(2)  # Update every 2 seconds
+            
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+    finally:
+        await websocket.close()
+# Add this to the end of backend/main.py
+
+# Task Progress Tracking
+task_progress = {
+    "infrastructure": {"completed": 5, "total": 5, "status": "completed"},
+    "backend": {"completed": 5, "total": 5, "status": "completed"},
+    "scraping": {"completed": 3, "total": 5, "status": "in-progress"},
+    "frontend": {"completed": 2, "total": 5, "status": "in-progress"},
+    "ai": {"completed": 1, "total": 5, "status": "in-progress"},
+    "collaboration": {"completed": 0, "total": 6, "status": "not-started"},
+    "ml": {"completed": 0, "total": 6, "status": "not-started"},
+    "plugins": {"completed": 0, "total": 6, "status": "not-started"}
+}
+
+@app.get("/progress")
+async def get_project_progress():
+    """Get current project progress"""
+    total_completed = sum(p["completed"] for p in task_progress.values())
+    total_tasks = sum(p["total"] for p in task_progress.values())
+    overall_percentage = round((total_completed / total_tasks) * 100, 1) if total_tasks > 0 else 0
+    
+    return {
+        "overall_progress": overall_percentage,
+        "completed_tasks": total_completed,
+        "total_tasks": total_tasks,
+        "projects": task_progress,
+        "last_updated": datetime.now().isoformat()
+    }
+
+@app.post("/progress/{project_id}/update")
+async def update_project_progress(project_id: str, completed: int):
+    """Update progress for a specific project"""
+    if project_id in task_progress:
+        task_progress[project_id]["completed"] = min(completed, task_progress[project_id]["total"])
+        
+        # Update status based on completion
+        completion_rate = task_progress[project_id]["completed"] / task_progress[project_id]["total"]
+        if completion_rate == 1.0:
+            task_progress[project_id]["status"] = "completed"
+        elif completion_rate > 0:
+            task_progress[project_id]["status"] = "in-progress"
+        else:
+            task_progress[project_id]["status"] = "not-started"
+        
+        return {"success": True, "project": task_progress[project_id]}
+    else:
+        return {"success": False, "error": "Project not found"}
+
+# Enhanced health check with progress
+@app.get("/health")
+async def health_check():
+    """Enhanced health check with progress"""
+    total_completed = sum(p["completed"] for p in task_progress.values())
+    total_tasks = sum(p["total"] for p in task_progress.values())
+    
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "scraper_available": SCRAPER_AVAILABLE if 'SCRAPER_AVAILABLE' in globals() else False,
+        "total_jobs": len(jobs_db) if 'jobs_db' in globals() else 0,
+        "active_jobs": len([j for j in jobs_db if j["status"] == "running"]) if 'jobs_db' in globals() else 0,
+        "project_progress": {
+            "completed_tasks": total_completed,
+            "total_tasks": total_tasks,
+            "percentage": round((total_completed / total_tasks) * 100, 1) if total_tasks > 0 else 0
+        }
+    }

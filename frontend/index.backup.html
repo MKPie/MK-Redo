@@ -1,0 +1,3548 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MK Processor 4.2.0 - Live Dashboard</title>
+    <style>
+        /* Core Theme System */
+        :root {
+            /* Default Dark Theme */
+            --bg-primary: #0a0e27;
+            --bg-secondary: #1a1f3a;
+            --bg-card: rgba(0,0,0,0.8);
+            --text-primary: #00ff88;
+            --text-secondary: #e0e7ff;
+            --text-dark: #000;
+            --accent-primary: #667eea;
+            --accent-secondary: #764ba2;
+            --border-color: #00ff88;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+            
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Light Theme */
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #e2e8f0;
+            --bg-card: #ffffff;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-dark: #ffffff;
+            --accent-primary: #667eea;
+            --accent-secondary: #5a67d8;
+            --border-color: #e2e8f0;
+        }
+
+        /* Cyber Theme */
+        [data-theme="cyber"] {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-card: rgba(0, 255, 0, 0.05);
+            --text-primary: #00ff00;
+            --text-secondary: #00cc00;
+            --border-color: #00ff00;
+            --accent-primary: #ff00ff;
+            --accent-secondary: #00ffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+
+        .live-status {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 10px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-left: 2px solid var(--border-color);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+        }
+
+        .settings-panel.active {
+            right: 0;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-close {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .settings-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .settings-section {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .theme-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .theme-option {
+            padding: 15px;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            background: var(--bg-card);
+        }
+
+        .theme-option:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .theme-option.active {
+            border-color: var(--text-primary);
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        /* Settings Toggle Button */
+        .settings-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 999;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .settings-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Chat Widget */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s;
+        }
+
+        .chat-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .chat-window {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 400px;
+            height: 500px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .chat-window.active {
+            display: flex;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 13px 13px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: var(--bg-secondary);
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .chat-send {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chat-send:hover {
+            background: var(--accent-secondary);
+            transform: translateX(2px);
+        }
+
+        /* Plugin System */
+        .plugin-manager {
+            margin-top: 20px;
+        }
+
+        .plugin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .plugin-toggle {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            width: 50px;
+            height: 26px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .plugin-toggle.active {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .plugin-toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+
+        .plugin-toggle.active::after {
+            left: 28px;
+        }
+
+        /* Task Modal */
+        .task-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .task-modal.active {
+            display: flex;
+        }
+
+        .task-modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .task-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .task-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 28px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .task-modal-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .task-details {
+            margin-bottom: 25px;
+        }
+
+        .task-details h3 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .task-description {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .task-requirements {
+            margin-bottom: 20px;
+        }
+
+        .task-requirements h4 {
+            color: var(--accent-primary);
+            margin-bottom: 10px;
+        }
+
+        .requirement-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            color: var(--text-secondary);
+        }
+
+        .requirement-item::before {
+            content: "▸";
+            color: var(--text-primary);
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .task-code-example {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .task-code-example pre {
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .task-action-btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-complete {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-complete:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-in-progress {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-in-progress:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-github {
+            background: #24292e;
+            color: white;
+        }
+
+        .btn-github:hover {
+            background: #1a1e22;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(36, 41, 46, 0.3);
+        }
+
+        /* Integration Panel */
+        .integration-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .integration-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-left: 5px solid;
+            transition: all 0.3s;
+        }
+
+        .integration-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        .github-card {
+            border-left-color: #24292e;
+        }
+
+        .hubspot-card {
+            border-left-color: #ff7a59;
+        }
+
+        .integration-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .integration-icon {
+            width: 32px;
+            height: 32px;
+            fill: currentColor;
+        }
+
+        .integration-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .connection-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select {
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .connect-btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .connect-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .connection-status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: 600;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .connection-status.success {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .connection-status.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .connection-status.warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .stat-change {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--accent-primary);
+            display: inline-block;
+        }
+
+        /* Progress Overview */
+        .progress-overview {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .progress-title {
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+
+        .progress-percentage {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-primary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            transition: all 1s ease;
+            width: 0%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Milestones */
+        .milestones {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .milestone {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .milestone:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .milestone.completed {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: var(--success);
+        }
+
+        .milestone.current {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--warning);
+        }
+
+        .milestone-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .milestone.completed .milestone-status {
+            background: var(--success);
+            color: white;
+        }
+
+        .milestone.current .milestone-status {
+            background: var(--warning);
+            color: white;
+        }
+
+        /* Roadmap */
+        .roadmap {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .phase-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 5px solid var(--accent-primary);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .phase-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .phase-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), transparent);
+            border-radius: 0 0 0 100px;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .phase-number {
+            background: var(--gradient-primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .phase-title {
+            color: var(--text-primary);
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        .phase-timeline {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .phase-progress {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .phase-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .phase-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #16a34a);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .phase-progress-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .project-list {
+            list-style: none;
+        }
+
+        .project-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+
+        .project-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            margin: 0 -10px;
+            padding: 12px 10px;
+            border-radius: 8px;
+        }
+
+        .project-item:last-child {
+            border-bottom: none;
+        }
+
+        .project-status {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .status-not-started {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+
+        .status-in-progress {
+            background: linear-gradient(135deg, var(--warning), #d97706);
+            animation: pulse 2s infinite;
+        }
+
+        .status-completed {
+            background: linear-gradient(135deg, var(--success), #16a34a);
+        }
+
+        .project-name {
+            flex: 1;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .project-priority {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .priority-critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .priority-high {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .priority-medium {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+
+        .start-btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .start-btn:hover {
+            background: var(--accent-secondary);
+            transform: translateY(-1px);
+        }
+
+        .start-btn:disabled {
+            background: var(--bg-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Task Grid */
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .task-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--accent-primary);
+            transition: all 0.3s;
+            border: 1px solid var(--border-color);
+        }
+
+        .task-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .task-title {
+            font-weight: bold;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+
+        .task-meta {
+            text-align: right;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .task-checklist {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .task-checklist li {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            color: var(--text-secondary);
+        }
+
+        .task-checklist li:hover {
+            background: rgba(102, 126, 234, 0.1);
+            margin: 0 -10px;
+            padding: 8px 10px;
+            border-radius: 6px;
+        }
+
+        .task-checklist li::before {
+            content: "○";
+            margin-right: 10px;
+            color: var(--text-secondary);
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .task-checklist li.completed::before {
+            content: "✓";
+            color: var(--success);
+        }
+
+        .task-checklist li.in-progress::before {
+            content: "◐";
+            color: var(--warning);
+        }
+
+        /* Sync Dashboard */
+        .sync-dashboard {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .sync-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .sync-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .sync-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .sync-status {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .sync-status.connected {
+            color: var(--success);
+        }
+
+        .sync-status.disconnected {
+            color: var(--error);
+        }
+
+        .sync-status.syncing {
+            color: var(--warning);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Logs Panel */
+        .logs-panel {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .log-entry {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+        }
+
+        .log-time {
+            color: var(--text-secondary);
+            font-weight: bold;
+            min-width: 80px;
+        }
+
+        .log-level {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .log-info {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+
+        .log-success {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .log-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .log-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 15px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-left: 4px solid;
+            z-index: 3000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left-color: var(--success);
+        }
+
+        .notification.error {
+            border-left-color: var(--error);
+        }
+
+        .notification.info {
+            border-left-color: var(--info);
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .integration-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .settings-panel {
+                width: 100%;
+                right: -100%;
+            }
+            
+            .chat-window {
+                width: 350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2.2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .roadmap {
+                grid-template-columns: 1fr;
+            }
+
+            .task-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-window {
+                width: 100%;
+                right: -10px;
+                left: 10px;
+            }
+            
+            .task-modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <div class="container">
+        <!-- Settings Toggle -->
+        <button class="settings-toggle" onclick="toggleSettings()">
+            <span>⚙</span>
+            <span>Settings</span>
+        </button>
+
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-header">
+                <h2>⚙ Settings</h2>
+                <button class="settings-close" onclick="toggleSettings()">×</button>
+            </div>
+            
+            <div class="settings-section">
+                <h3>🎨 Theme</h3>
+                <div class="theme-selector">
+                    <div class="theme-option" onclick="setTheme('dark')" data-theme="dark">
+                        <div>🌙</div>
+                        <div>Dark</div>
+                    </div>
+                    <div class="theme-option active" onclick="setTheme('light')" data-theme="light">
+                        <div>☀️</div>
+                        <div>Light</div>
+                    </div>
+                    <div class="theme-option" onclick="setTheme('cyber')" data-theme="cyber">
+                        <div>💻</div>
+                        <div>Cyber</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>🔌 Plugins</h3>
+                <div class="plugin-manager">
+                    <div class="plugin-item">
+                        <div>
+                            <div style="font-weight: bold;">GitHub Advanced</div>
+                            <div style="font-size: 0.85rem; opacity: 0.8;">Enhanced GitHub integration</div>
+                        </div>
+                        <div class="plugin-toggle" onclick="togglePlugin(this, 'github-advanced')"></div>
+                    </div>
+                    <div class="plugin-item">
+                        <div>
+                            <div style="font-weight: bold;">AI Assistant Pro</div>
+                            <div style="font-size: 0.85rem; opacity: 0.8;">Advanced AI features</div>
+                        </div>
+                        <div class="plugin-toggle" onclick="togglePlugin(this, 'ai-pro')"></div>
+                    </div>
+                    <div class="plugin-item">
+                        <div>
+                            <div style="font-weight: bold;">Analytics Dashboard</div>
+                            <div style="font-size: 0.85rem; opacity: 0.8;">Detailed analytics</div>
+                        </div>
+                        <div class="plugin-toggle" onclick="togglePlugin(this, 'analytics')"></div>
+                    </div>
+                    <div class="plugin-item">
+                        <div>
+                            <div style="font-weight: bold;">Voice Commands</div>
+                            <div style="font-size: 0.85rem; opacity: 0.8;">Voice control support</div>
+                        </div>
+                        <div class="plugin-toggle" onclick="togglePlugin(this, 'voice')"></div>
+                    </div>
+                </div>
+                <button class="action-btn" style="margin-top: 15px; width: 100%;" onclick="openPluginStore()">
+                    🛒 Browse Plugin Store
+                </button>
+            </div>
+            
+            <div class="settings-section">
+                <h3>🔔 Notifications</h3>
+                <div class="plugin-item">
+                    <div>Desktop Notifications</div>
+                    <div class="plugin-toggle active" onclick="toggleNotifications(this)"></div>
+                </div>
+                <div class="plugin-item">
+                    <div>Sound Effects</div>
+                    <div class="plugin-toggle active" onclick="toggleSound(this)"></div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>⚡ Performance</h3>
+                <div class="plugin-item">
+                    <div>Auto-sync</div>
+                    <div class="plugin-toggle" onclick="toggleAutoSync(this)"></div>
+                </div>
+                <div class="plugin-item">
+                    <div>Live Updates</div>
+                    <div class="plugin-toggle active" onclick="toggleLiveUpdates(this)"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Widget -->
+        <div class="chat-widget">
+            <button class="chat-toggle" onclick="toggleChat()">
+                <span id="chatIcon">💬</span>
+            </button>
+            <div class="chat-window" id="chatWindow">
+                <div class="chat-header">
+                    <h3>🤖 AI Assistant</h3>
+                    <button style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;" onclick="toggleChat()">×</button>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                        👋 Hi! I'm your AI assistant. How can I help you with your project today?
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything..." onkeypress="handleChatKeypress(event)">
+                    <button class="chat-send" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Modal -->
+        <div class="task-modal" id="taskModal">
+            <div class="task-modal-content">
+                <div class="task-modal-header">
+                    <h2 id="taskModalTitle">Task Details</h2>
+                    <button class="task-modal-close" onclick="closeTaskModal()">×</button>
+                </div>
+                <div id="taskModalBody">
+                    <!-- Task details will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>MK Processor 4.2.0</h1>
+            <p>AI-Powered Dual-Market Intelligence Platform</p>
+            <div class="live-status">
+                <div class="status-dot"></div>
+                <span id="liveStatusText">Real-time Dashboard Active</span>
+            </div>
+        </div>
+
+        <!-- Integration Panel -->
+        <div class="integration-panel">
+            <!-- GitHub Integration -->
+            <div class="integration-card github-card">
+                <div class="integration-header">
+                    <svg class="integration-icon" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    <div class="integration-title">GitHub Repository</div>
+                </div>
+                <div class="connection-form">
+                    <div class="form-group">
+                        <label for="repoUrl">Repository URL</label>
+                        <input type="text" id="repoUrl" placeholder="https://github.com/username/ultimate-scraper" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="githubToken">GitHub Personal Access Token</label>
+                        <input type="password" id="githubToken" placeholder="github_pat_...">
+                    </div>
+                    <button class="connect-btn" id="githubConnectBtn" onclick="connectToGitHub()">
+                        <span id="githubBtnText">Connect Repository</span>
+                        <div class="loading-spinner hidden" id="githubSpinner"></div>
+                    </button>
+                    <div class="connection-status" id="githubStatus"></div>
+                </div>
+            </div>
+
+            <!-- HubSpot Integration -->
+            <div class="integration-card hubspot-card">
+                <div class="integration-header">
+                    <svg class="integration-icon" viewBox="0 0 24 24">
+                        <path fill="#ff7a59" d="M18.164 7.931V4.5a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0-.5.5v3.431l6 3.838 6-3.838zM6.164 8.569v8.931a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5V8.569l-6 3.838-6-3.838z"></path>
+                    </svg>
+                    <div class="integration-title">HubSpot CRM</div>
+                </div>
+                <div class="connection-form">
+                    <div class="form-group">
+                        <label for="hubspotApiKey">HubSpot Private App Token</label>
+                        <input type="password" id="hubspotApiKey" placeholder="pat-na1-...">
+                    </div>
+                    <div class="form-group">
+                        <label for="hubspotPortal">Portal ID</label>
+                        <input type="text" id="hubspotPortal" placeholder="12345678">
+                    </div>
+                    <div class="form-group">
+                        <label for="syncFrequency">Sync Frequency</label>
+                        <select id="syncFrequency">
+                            <option value="5">Every 5 minutes</option>
+                            <option value="15">Every 15 minutes</option>
+                            <option value="30">Every 30 minutes</option>
+                            <option value="60">Every hour</option>
+                        </select>
+                    </div>
+                    <button class="connect-btn" id="hubspotConnectBtn" onclick="connectToHubSpot()">
+                        <span id="hubspotBtnText">Connect HubSpot</span>
+                        <div class="loading-spinner hidden" id="hubspotSpinner"></div>
+                    </button>
+                    <div class="connection-status" id="hubspotStatus"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sync Dashboard -->
+        <div class="sync-dashboard">
+            <h2>🔄 Live Sync Status</h2>
+            <div class="sync-grid">
+                <div class="sync-item">
+                    <div class="sync-status disconnected" id="githubSyncStatus">GitHub: Disconnected</div>
+                    <div>Last sync: <span id="githubLastSync">Never</span></div>
+                </div>
+                <div class="sync-item">
+                    <div class="sync-status disconnected" id="hubspotSyncStatus">HubSpot: Disconnected</div>
+                    <div>Last sync: <span id="hubspotLastSync">Never</span></div>
+                </div>
+                <div class="sync-item">
+                    <div class="sync-status" id="autoSyncStatus">Auto-sync: Disabled</div>
+                    <div>Next sync: <span id="nextSync">N/A</span></div>
+                </div>
+                <div class="sync-item">
+                    <div class="sync-status" id="dataIntegrity">Data Integrity: ✓</div>
+                    <div>Records synced: <span id="recordsSynced">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="overallProgress">0%</div>
+                <div class="stat-label">Overall Progress</div>
+                <div class="stat-change" id="progressChange">+0% this week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedTasks">0/38</div>
+                <div class="stat-label">Tasks Completed</div>
+                <div class="stat-change" id="tasksChange">+0 this week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="currentPhase">Phase 1</div>
+                <div class="stat-label">Current Phase</div>
+                <div class="stat-change" id="phaseProgress">Foundation</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="timeToMarket">36</div>
+                <div class="stat-label">Months to Market</div>
+                <div class="stat-change" id="timelineChange">On track</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="teamVelocity">12</div>
+                <div class="stat-label">Sprint Velocity</div>
+                <div class="stat-change" id="velocityChange">Story points/week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="hubspotDeals">$0</div>
+                <div class="stat-label">Pipeline Value</div>
+                <div class="stat-change" id="pipelineChange">HubSpot integrated</div>
+            </div>
+        </div>
+
+        <!-- Progress Overview -->
+        <div class="progress-overview">
+            <div class="progress-header">
+                <div class="progress-title">📊 Project Progress</div>
+                <div class="progress-percentage" id="progressPercentage">0%</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%;"></div>
+            </div>
+            <p id="progressText">🚀 Ready to build Ultimate Scraper! Connect GitHub to start tracking progress.</p>
+            
+            <div class="milestones">
+                <div class="milestone current" id="milestone1">
+                    <div class="milestone-status">1</div>
+                    <h4>Foundation Setup</h4>
+                    <p>Development environment and core infrastructure</p>
+                </div>
+                <div class="milestone" id="milestone2">
+                    <div class="milestone-status">2</div>
+                    <h4>MVP Launch</h4>
+                    <p>Enterprise web scraping platform</p>
+                </div>
+                <div class="milestone" id="milestone3">
+                    <div class="milestone-status">3</div>
+                    <h4>Market Traction</h4>
+                    <p>First 100 enterprise customers</p>
+                </div>
+                <div class="milestone" id="milestone4">
+                    <div class="milestone-status">4</div>
+                    <h4>Dual Platform</h4>
+                    <p>Consumer platform launch</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2>⚡ Quick Actions</h2>
+            <div class="actions-grid">
+                <button class="action-btn" onclick="forceSyncAll()">
+                    🔄 Force Sync All
+                </button>
+                <button class="action-btn" onclick="generateReport()">
+                    📄 Generate Report
+                </button>
+                <button class="action-btn" onclick="updateHubSpot()">
+                    📊 Update HubSpot
+                </button>
+                <button class="action-btn" onclick="exportData()">
+                    💾 Export Data
+                </button>
+                <button class="action-btn" onclick="scheduleDemo()">
+                    📅 Schedule Demo
+                </button>
+                <button class="action-btn" onclick="createTask()">
+                    ➕ Create Task
+                </button>
+            </div>
+        </div>
+
+        <!-- Implementation Roadmap -->
+        <div class="roadmap">
+            <!-- Phase 1: Foundation -->
+            <div class="phase-card">
+                <div class="phase-header">
+                    <div class="phase-number">1</div>
+                    <div class="phase-title">Foundation</div>
+                </div>
+                <div class="phase-timeline">Months 1-4 | Enterprise MVP</div>
+                <div class="phase-progress">
+                    <div class="phase-progress-bar">
+                        <div class="phase-progress-fill" id="phase1Progress" style="width: 0%"></div>
+                    </div>
+                    <div class="phase-progress-text" id="phase1Text">0% Complete</div>
+                </div>
+                <ul class="project-list">
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-dev-env">○</div>
+                        <div class="project-name">Development Environment</div>
+                        <div class="project-priority priority-critical">Critical</div>
+                        <button class="start-btn" onclick="showTaskDetails('dev-env')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-scraping">○</div>
+                        <div class="project-name">Web Scraping MVP</div>
+                        <div class="project-priority priority-critical">Critical</div>
+                        <button class="start-btn" onclick="showTaskDetails('scraping')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-ai">○</div>
+                        <div class="project-name">AI Integration</div>
+                        <div class="project-priority priority-high">High</div>
+                        <button class="start-btn" onclick="showTaskDetails('ai')">View Tasks</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started" id="status-frontend">○</div>
+                        <div class="project-name">Frontend Dashboard</div>
+                        <div class="project-priority priority-high">High</div>
+                        <button class="start-btn" onclick="showTaskDetails('frontend')">View Tasks</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Additional phases will be inserted here dynamically -->
+        </div>
+
+        <!-- Activity Logs -->
+        <div class="logs-panel">
+            <h2>📋 Activity Logs</h2>
+            <div id="activityLogs"><div class="log-entry">
+                <div class="log-time">[1:59:23 PM]</div>
+                <div class="log-level log-info">INFO</div>
+                <div>Ready to track Ultimate Scraper development</div>
+            </div><div class="log-entry">
+                <div class="log-time">[1:59:23 PM]</div>
+                <div class="log-level log-info">INFO</div>
+                <div>MK Processor Ultimate Dashboard initialized</div>
+            </div><div class="log-entry">
+                <div class="log-time">[1:59:23 PM]</div>
+                <div class="log-level log-info">INFO</div>
+                <div>Theme changed to light</div>
+            </div>
+                <div class="log-entry">
+                    <div class="log-time">[READY]</div>
+                    <div class="log-level log-info">INFO</div>
+                    <div>Dashboard initialized. Ready for integration setup.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Plugin System
+        const PluginManager = {
+            plugins: {},
+            
+            register(name, plugin) {
+                this.plugins[name] = plugin;
+                console.log(`Plugin registered: ${name}`);
+            },
+            
+            enable(name) {
+                if (this.plugins[name]) {
+                    this.plugins[name].enabled = true;
+                    if (this.plugins[name].onEnable) {
+                        this.plugins[name].onEnable();
+                    }
+                    localStorage.setItem(`plugin-${name}`, 'enabled');
+                }
+            },
+            
+            disable(name) {
+                if (this.plugins[name]) {
+                    this.plugins[name].enabled = false;
+                    if (this.plugins[name].onDisable) {
+                        this.plugins[name].onDisable();
+                    }
+                    localStorage.removeItem(`plugin-${name}`);
+                }
+            },
+            
+            isEnabled(name) {
+                return localStorage.getItem(`plugin-${name}`) === 'enabled';
+            },
+            
+            loadAll() {
+                Object.keys(this.plugins).forEach(name => {
+                    if (this.isEnabled(name)) {
+                        this.enable(name);
+                    }
+                });
+            }
+        };
+
+        // Global state management
+        const AppState = {
+            github: {
+                connected: false,
+                token: null,
+                repoData: null,
+                lastSync: null
+            },
+            hubspot: {
+                connected: false,
+                apiKey: null,
+                portalId: null,
+                lastSync: null
+            },
+            sync: {
+                autoSync: false,
+                interval: null,
+                frequency: 5
+            },
+            progress: {
+                overall: 0,
+                completed: 0,
+                total: 64,
+                phases: {
+                    phase1: 0,
+                    phase2: 0,
+                    phase3: 0,
+                    phase4: 0
+                }
+            },
+            settings: {
+                theme: localStorage.getItem('theme') || 'dark',
+                notifications: localStorage.getItem('notifications') !== 'false',
+                sound: localStorage.getItem('sound') !== 'false'
+            }
+        };
+
+        // Ultimate Scraper Project Data
+        const projectData = {
+            'dev-env': {
+                title: 'Development Environment Setup',
+                description: 'Set up the complete development environment for Ultimate Scraper including Docker containers, CI/CD pipeline, and monitoring infrastructure.',
+                phase: 1,
+                tasks: [
+                    {
+                        name: 'Create repository structure',
+                        description: 'Initialize a well-organized repository with proper folder structure for frontend, backend, database schemas, and documentation. Include .gitignore, README.md, and LICENSE files.',
+                        requirements: [
+                            'Create /backend, /frontend, /database, /docs folders',
+                            'Add comprehensive .gitignore for Python, Node.js, and common IDEs',
+                            'Write initial README.md with project overview',
+                            'Add MIT or appropriate license'
+                        ],
+                        code: `# Repository Structure
+ultimate-scraper/
+├── backend/
+│   ├── app/
+│   ├── tests/
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   └── package.json
+├── database/
+│   ├── schemas/
+│   └── migrations/
+├── docs/
+├── docker-compose.yml
+├── .gitignore
+├── README.md
+└── LICENSE`,
+                        estimatedHours: 2
+                    },
+                    {
+                        name: 'Setup Docker containerization',
+                        description: 'Create Docker configuration for all services including backend API, frontend, PostgreSQL, Redis, and pgAdmin for development.',
+                        requirements: [
+                            'Create Dockerfile for backend service',
+                            'Create Dockerfile for frontend service',
+                            'Write docker-compose.yml with all services',
+                            'Configure networking and volumes',
+                            'Add environment variable management'
+                        ],
+                        code: `version: '3.8'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@db:5432/scraper
+    depends_on:
+      - db
+      - redis
+      
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=scraper
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+      
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@scraper.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+
+volumes:
+  postgres_data:`,
+                        estimatedHours: 4
+                    },
+                    {
+                        name: 'Configure CI/CD pipeline',
+                        description: 'Set up GitHub Actions for continuous integration and deployment with automated testing, linting, and deployment stages.',
+                        requirements: [
+                            'Create .github/workflows directory',
+                            'Write CI workflow for testing',
+                            'Add linting and code quality checks',
+                            'Configure automated deployment',
+                            'Set up branch protection rules'
+                        ],
+                        estimatedHours: 6
+                    },
+                    {
+                        name: 'Initialize PostgreSQL database',
+                        description: 'Design and implement the database schema for storing scraping jobs, results, user data, and analytics.',
+                        requirements: [
+                            'Design normalized database schema',
+                            'Create tables for jobs, results, users',
+                            'Add indexes for performance',
+                            'Set up database migrations',
+                            'Create initial seed data'
+                        ],
+                        estimatedHours: 8
+                    },
+                    {
+                        name: 'Setup Redis caching',
+                        description: 'Configure Redis for caching, job queuing, and real-time data management.',
+                        requirements: [
+                            'Configure Redis connection',
+                            'Implement caching strategies',
+                            'Set up job queue structure',
+                            'Add session management',
+                            'Configure persistence options'
+                        ],
+                        estimatedHours: 4
+                    },
+                    {
+                        name: 'Configure environment variables',
+                        description: 'Set up secure environment variable management for different environments (dev, staging, production).',
+                        requirements: [
+                            'Create .env.example file',
+                            'Set up environment validation',
+                            'Configure secrets management',
+                            'Document all environment variables',
+                            'Add environment-specific configs'
+                        ],
+                        estimatedHours: 3
+                    },
+                    {
+                        name: 'Setup monitoring infrastructure',
+                        description: 'Implement logging, monitoring, and alerting systems for the application.',
+                        requirements: [
+                            'Configure structured logging',
+                            'Set up error tracking (Sentry)',
+                            'Add performance monitoring',
+                            'Create health check endpoints',
+                            'Configure alerts for critical issues'
+                        ],
+                        estimatedHours: 6
+                    },
+                    {
+                        name: 'Create development documentation',
+                        description: 'Write comprehensive documentation for developers including setup guides, architecture overview, and contribution guidelines.',
+                        requirements: [
+                            'Write getting started guide',
+                            'Document architecture decisions',
+                            'Create API documentation template',
+                            'Add contribution guidelines',
+                            'Include troubleshooting guide'
+                        ],
+                        estimatedHours: 5
+                    }
+                ],
+                files: ['README.md', '.gitignore', 'docker-compose.yml', 'backend/Dockerfile', 'frontend/Dockerfile', '.github/workflows/', 'docs/'],
+                priority: 'Critical',
+                estimatedHours: 48
+            },
+            'scraping': {
+                title: 'Web Scraping Engine',
+                description: 'Build the core web scraping engine with advanced anti-detection, proxy management, and intelligent data extraction capabilities.',
+                phase: 1,
+                tasks: [
+                    {
+                        name: 'Implement Selenium WebDriver integration',
+                        description: 'Set up Selenium with multiple browser support and advanced configuration options for web scraping.',
+                        requirements: [
+                            'Install and configure Selenium',
+                            'Set up Chrome, Firefox, and Edge drivers',
+                            'Implement browser profile management',
+                            'Add headless mode support',
+                            'Configure driver options for stealth'
+                        ],
+                        code: `from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+class StealthDriver:
+    def __init__(self):
+        self.options = Options()
+        self.options.add_argument('--disable-blink-features=AutomationControlled')
+        self.options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        self.options.add_experimental_option('useAutomationExtension', False)
+        
+    def create_driver(self, headless=False):
+        if headless:
+            self.options.add_argument('--headless')
+        
+        driver = webdriver.Chrome(options=self.options)
+        driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
+            'source': '''
+                Object.defineProperty(navigator, 'webdriver', {
+                    get: () => undefined
+                })
+            '''
+        })
+        return driver`,
+                        estimatedHours: 12
+                    },
+                    {
+                        name: 'Setup Playwright integration',
+                        description: 'Implement Playwright as an alternative to Selenium for modern web scraping with better performance.',
+                        requirements: [
+                            'Install Playwright and browsers',
+                            'Create Playwright wrapper class',
+                            'Implement stealth plugins',
+                            'Add screenshot and video recording',
+                            'Configure browser contexts'
+                        ],
+                        estimatedHours: 10
+                    },
+                    {
+                        name: 'Build proxy rotation system',
+                        description: 'Create a robust proxy management system with support for residential and datacenter proxies.',
+                        requirements: [
+                            'Integrate multiple proxy providers',
+                            'Implement proxy health checking',
+                            'Add automatic rotation logic',
+                            'Handle proxy authentication',
+                            'Track proxy performance metrics'
+                        ],
+                        code: `class ProxyManager:
+    def __init__(self):
+        self.proxies = []
+        self.current_index = 0
+        
+    def add_proxy_provider(self, provider):
+        """Add a proxy provider (residential, datacenter, etc)"""
+        pass
+        
+    def get_next_proxy(self):
+        """Get next healthy proxy with rotation"""
+        # Check proxy health
+        # Rotate based on usage
+        # Return proxy configuration
+        pass
+        
+    def mark_proxy_failed(self, proxy):
+        """Mark a proxy as failed and remove from rotation"""
+        pass`,
+                        estimatedHours: 15
+                    },
+                    {
+                        name: 'Integrate CAPTCHA solving',
+                        description: 'Implement multiple CAPTCHA solving services for handling various CAPTCHA types.',
+                        requirements: [
+                            'Integrate 2Captcha API',
+                            'Add Anti-Captcha support',
+                            'Implement reCAPTCHA v2/v3 solving',
+                            'Handle hCaptcha and others',
+                            'Add fallback mechanisms'
+                        ],
+                        estimatedHours: 12
+                    },
+                    {
+                        name: 'Create job queue system',
+                        description: 'Build a distributed job queue system using Celery for managing scraping tasks.',
+                        requirements: [
+                            'Set up Celery with Redis',
+                            'Create task definitions',
+                            'Implement priority queues',
+                            'Add task retry logic',
+                            'Build task monitoring'
+                        ],
+                        estimatedHours: 14
+                    },
+                    {
+                        name: 'Implement rate limiting',
+                        description: 'Create intelligent rate limiting to ensure respectful scraping and avoid detection.',
+                        requirements: [
+                            'Domain-based rate limiting',
+                            'Adaptive delay algorithms',
+                            'Request pattern randomization',
+                            'Implement backoff strategies',
+                            'Add per-site configurations'
+                        ],
+                        estimatedHours: 8
+                    },
+                    {
+                        name: 'Build API endpoints',
+                        description: 'Create RESTful API endpoints for managing scraping jobs and retrieving results.',
+                        requirements: [
+                            'Design API schema',
+                            'Implement CRUD operations',
+                            'Add authentication',
+                            'Create WebSocket endpoints',
+                            'Build API documentation'
+                        ],
+                        estimatedHours: 16
+                    },
+                    {
+                        name: 'Add error handling',
+                        description: 'Implement comprehensive error handling and recovery mechanisms.',
+                        requirements: [
+                            'Create error classification system',
+                            'Implement retry strategies',
+                            'Add dead letter queues',
+                            'Build error reporting',
+                            'Create recovery workflows'
+                        ],
+                        estimatedHours: 10
+                    },
+                    {
+                        name: 'Create data validation pipeline',
+                        description: 'Build a system for validating and cleaning scraped data.',
+                        requirements: [
+                            'Define validation rules',
+                            'Implement data cleaning',
+                            'Add data transformation',
+                            'Create quality scoring',
+                            'Build validation reports'
+                        ],
+                        estimatedHours: 11
+                    },
+                    {
+                        name: 'Setup browser fingerprinting',
+                        description: 'Implement advanced browser fingerprint randomization to avoid detection.',
+                        requirements: [
+                            'Randomize user agents',
+                            'Vary screen resolutions',
+                            'Modify canvas fingerprints',
+                            'Randomize WebGL data',
+                            'Implement timezone spoofing'
+                        ],
+                        estimatedHours: 14
+                    }
+                ],
+                files: ['backend/app/scraping/', 'backend/requirements.txt', 'backend/app/main.py', 'backend/app/models/', 'backend/app/api/'],
+                priority: 'Critical',
+                estimatedHours: 120
+            },
+            'ai': {
+                title: 'AI Integration Layer',
+                description: 'Integrate multiple AI providers for intelligent data extraction, content analysis, and decision making.',
+                phase: 1,
+                tasks: [
+                    {
+                        name: 'Integrate OpenAI GPT-4',
+                        description: 'Set up OpenAI API integration for advanced text processing and data extraction.',
+                        requirements: [
+                            'Configure OpenAI client',
+                            'Implement prompt templates',
+                            'Add response parsing',
+                            'Handle rate limits',
+                            'Track token usage'
+                        ],
+                        code: `import openai
+from typing import Dict, List
+
+class OpenAIProcessor:
+    def __init__(self, api_key: str):
+        self.client = openai.Client(api_key=api_key)
+        
+    async def extract_structured_data(self, html_content: str, schema: Dict):
+        """Extract structured data from HTML using GPT-4"""
+        prompt = self._build_extraction_prompt(html_content, schema)
+        
+        response = await self.client.chat.completions.create(
+            model="gpt-4-turbo-preview",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        
+        return self._parse_response(response)`,
+                        estimatedHours: 10
+                    },
+                    {
+                        name: 'Integrate Anthropic Claude',
+                        description: 'Add Claude API for alternative AI processing with larger context windows.',
+                        requirements: [
+                            'Set up Claude client',
+                            'Implement conversation management',
+                            'Add context windowing',
+                            'Handle API differences',
+                            'Create fallback logic'
+                        ],
+                        estimatedHours: 8
+                    },
+                    {
+                        name: 'Integrate Google Gemini',
+                        description: 'Add Google Gemini for multimodal AI capabilities including image analysis.',
+                        requirements: [
+                            'Configure Gemini API',
+                            'Implement image processing',
+                            'Add multimodal prompts',
+                            'Handle response formats',
+                            'Track API usage'
+                        ],
+                        estimatedHours: 8
+                    },
+                    {
+                        name: 'Setup local Ollama',
+                        description: 'Implement Ollama for privacy-focused local AI processing.',
+                        requirements: [
+                            'Install Ollama server',
+                            'Configure local models',
+                            'Implement API wrapper',
+                            'Add model management',
+                            'Create performance monitoring'
+                        ],
+                        estimatedHours: 6
+                    },
+                    {
+                        name: 'Build provider routing',
+                        description: 'Create intelligent routing system to choose the best AI provider for each task.',
+                        requirements: [
+                            'Define routing rules',
+                            'Implement cost optimization',
+                            'Add performance tracking',
+                            'Create fallback chains',
+                            'Build A/B testing framework'
+                        ],
+                        estimatedHours: 12
+                    },
+                    {
+                        name: 'Implement response caching',
+                        description: 'Build caching system to reduce API costs and improve performance.',
+                        requirements: [
+                            'Design cache key strategy',
+                            'Implement Redis caching',
+                            'Add cache invalidation',
+                            'Track cache metrics',
+                            'Create cache warming'
+                        ],
+                        estimatedHours: 8
+                    },
+                    {
+                        name: 'Create cost tracking',
+                        description: 'Build comprehensive cost tracking and budget management system.',
+                        requirements: [
+                            'Track token usage',
+                            'Calculate costs per provider',
+                            'Implement budget alerts',
+                            'Create usage reports',
+                            'Add cost optimization'
+                        ],
+                        estimatedHours: 7
+                    },
+                    {
+                        name: 'Build prompt templates',
+                        description: 'Create a library of optimized prompt templates for different extraction tasks.',
+                        requirements: [
+                            'Design template system',
+                            'Create extraction prompts',
+                            'Add validation prompts',
+                            'Build prompt testing',
+                            'Implement versioning'
+                        ],
+                        estimatedHours: 9
+                    },
+                    {
+                        name: 'Add response validation',
+                        description: 'Implement validation system for AI responses to ensure quality.',
+                        requirements: [
+                            'Define validation rules',
+                            'Create quality scoring',
+                            'Add confidence metrics',
+                            'Implement re-processing',
+                            'Build validation reports'
+                        ],
+                        estimatedHours: 8
+                    },
+                    {
+                        name: 'Implement fallback mechanisms',
+                        description: 'Create robust fallback system for handling AI provider failures.',
+                        requirements: [
+                            'Design fallback chains',
+                            'Implement retry logic',
+                            'Add provider switching',
+                            'Create degraded modes',
+                            'Build monitoring alerts'
+                        ],
+                        estimatedHours: 6
+                    }
+                ],
+                files: ['backend/app/ai/', 'backend/app/providers/', 'backend/app/prompts/', 'backend/app/utils/'],
+                priority: 'High',
+                estimatedHours: 80
+            },
+            'frontend': {
+                title: 'Frontend Dashboard',
+                description: 'Build a modern React dashboard for managing scraping jobs and viewing results.',
+                phase: 1,
+                tasks: [
+                    {
+                        name: 'Setup React project',
+                        description: 'Initialize React 18 project with TypeScript and modern tooling.',
+                        requirements: [
+                            'Create React app with Vite',
+                            'Configure TypeScript',
+                            'Set up ESLint and Prettier',
+                            'Add routing with React Router',
+                            'Configure state management'
+                        ],
+                        estimatedHours: 6
+                    },
+                    {
+                        name: 'Implement responsive layout',
+                        description: 'Create responsive dashboard layout with navigation and component structure.',
+                        requirements: [
+                            'Design mobile-first layout',
+                            'Create navigation components',
+                            'Build responsive grid system',
+                            'Add sidebar navigation',
+                            'Implement breadcrumbs'
+                        ],
+                        estimatedHours: 12
+                    },
+                    {
+                        name: 'Create job management UI',
+                        description: 'Build interface for creating, monitoring, and managing scraping jobs.',
+                        requirements: [
+                            'Design job creation wizard',
+                            'Build job listing table',
+                            'Add filtering and search',
+                            'Create job detail views',
+                            'Implement bulk actions'
+                        ],
+                        estimatedHours: 16
+                    },
+                    {
+                        name: 'Build WebSocket integration',
+                        description: 'Implement real-time updates using WebSocket connections.',
+                        requirements: [
+                            'Set up Socket.IO client',
+                            'Create connection management',
+                            'Handle real-time updates',
+                            'Add reconnection logic',
+                            'Build notification system'
+                        ],
+                        estimatedHours: 10
+                    },
+                    {
+                        name: 'Develop analytics components',
+                        description: 'Create data visualization components for analytics and reporting.',
+                        requirements: [
+                            'Integrate charting library',
+                            'Build dashboard widgets',
+                            'Create custom charts',
+                            'Add export functionality',
+                            'Implement drill-down views'
+                        ],
+                        estimatedHours: 14
+                    },
+                    {
+                        name: 'Implement authentication',
+                        description: 'Build secure authentication and authorization system.',
+                        requirements: [
+                            'Create login/signup forms',
+                            'Implement JWT handling',
+                            'Add role-based access',
+                            'Build password reset',
+                            'Create user profile'
+                        ],
+                        estimatedHours: 12
+                    },
+                    {
+                        name: 'Create settings panels',
+                        description: 'Build configuration interfaces for system settings and preferences.',
+                        requirements: [
+                            'Design settings layout',
+                            'Create form components',
+                            'Add validation logic',
+                            'Implement preferences',
+                            'Build API key management'
+                        ],
+                        estimatedHours: 8
+                    },
+                    {
+                        name: 'Add theme support',
+                        description: 'Implement dark/light theme switching with custom theming.',
+                        requirements: [
+                            'Create theme system',
+                            'Build theme switcher',
+                            'Add color customization',
+                            'Store preferences',
+                            'Ensure accessibility'
+                        ],
+                        estimatedHours: 6
+                    },
+                    {
+                        name: 'Build notification system',
+                        description: 'Create comprehensive notification and alert system.',
+                        requirements: [
+                            'Design notification UI',
+                            'Implement toast messages',
+                            'Add notification center',
+                            'Create alert priorities',
+                            'Build email preferences'
+                        ],
+                        estimatedHours: 8
+                    },
+                    {
+                        name: 'Implement PWA features',
+                        description: 'Add Progressive Web App capabilities for offline support.',
+                        requirements: [
+                            'Configure service worker',
+                            'Add offline caching',
+                            'Implement app manifest',
+                            'Create install prompt',
+                            'Build offline UI'
+                        ],
+                        estimatedHours: 8
+                    }
+                ],
+                files: ['frontend/src/', 'frontend/package.json', 'frontend/public/', 'frontend/src/components/', 'frontend/src/pages/'],
+                priority: 'High',
+                estimatedHours: 100
+            }
+        };
+
+        // Task Management Functions
+        function showTaskDetails(projectId) {
+            const project = projectData[projectId];
+            if (!project) return;
+
+            const modal = document.getElementById('taskModal');
+            const modalTitle = document.getElementById('taskModalTitle');
+            const modalBody = document.getElementById('taskModalBody');
+
+            modalTitle.textContent = `📋 ${project.title}`;
+            
+            let tasksHtml = `
+                <div class="task-details">
+                    <div class="task-description">
+                        <p>${project.description}</p>
+                    </div>
+                    <div style="margin: 20px 0;">
+                        <strong>Phase:</strong> ${project.phase} | 
+                        <strong>Priority:</strong> <span class="priority-${project.priority.toLowerCase()}">${project.priority}</span> | 
+                        <strong>Estimated Hours:</strong> ${project.estimatedHours}
+                    </div>
+                    <h3 style="margin-top: 25px; margin-bottom: 20px; color: var(--text-primary);">📌 Tasks</h3>
+                    <div style="display: grid; gap: 20px;">
+            `;
+
+            project.tasks.forEach((task, index) => {
+                tasksHtml += `
+                    <div style="background: var(--bg-secondary); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h4 style="color: var(--accent-primary); margin: 0;">${index + 1}. ${task.name}</h4>
+                            <span style="font-size: 0.9rem; color: var(--text-secondary);">${task.estimatedHours}h</span>
+                        </div>
+                        <p style="margin-bottom: 15px; line-height: 1.6;">${task.description}</p>
+                        
+                        <div class="task-requirements">
+                            <h5 style="color: var(--text-primary); margin-bottom: 10px;">Requirements:</h5>
+                            <ul style="margin: 0; padding-left: 20px;">
+                                ${task.requirements.map(req => `<li style="margin-bottom: 5px; color: var(--text-secondary);">${req}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        ${task.code ? `
+                            <div class="task-code-example">
+                                <h5 style="color: #fff; margin-bottom: 10px;">Example Code:</h5>
+                                <pre><code>${escapeHtml(task.code)}</code></pre>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="task-actions">
+                            <button class="task-action-btn btn-in-progress" onclick="markTaskInProgress('${projectId}', ${index})">
+                                ▶ Start Working
+                            </button>
+                            <button class="task-action-btn btn-complete" onclick="markTaskComplete('${projectId}', ${index})">
+                                ✓ Mark Complete
+                            </button>
+                            <button class="task-action-btn btn-github" onclick="pushToGitHub('${projectId}', ${index})">
+                                ⬆ Push to GitHub
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            tasksHtml += `
+                    </div>
+                </div>
+            `;
+
+            modalBody.innerHTML = tasksHtml;
+            modal.classList.add('active');
+            
+            addLog('INFO', `Viewing tasks for ${project.title}`);
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('active');
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function markTaskInProgress(projectId, taskIndex) {
+            const project = projectData[projectId];
+            const task = project.tasks[taskIndex];
+            
+            // Update task status in localStorage
+            const taskKey = `task-${projectId}-${taskIndex}`;
+            localStorage.setItem(taskKey, 'in-progress');
+            
+            addLog('INFO', `Started working on: ${task.name}`);
+            showNotification(`Task started: ${task.name}`, 'info');
+            
+            // Update UI
+            updateProjectStatus(projectId);
+        }
+
+        function markTaskComplete(projectId, taskIndex) {
+            const project = projectData[projectId];
+            const task = project.tasks[taskIndex];
+            
+            // Update task status
+            const taskKey = `task-${projectId}-${taskIndex}`;
+            localStorage.setItem(taskKey, 'completed');
+            
+            addLog('SUCCESS', `✓ Task completed: ${task.name}`);
+            showNotification(`Task completed: ${task.name}`, 'success');
+            
+            // Update progress
+            updateProjectStatus(projectId);
+            updateOverallProgress();
+            
+            // If GitHub is connected, offer to push
+            if (AppState.github.connected) {
+                if (confirm(`Push completed task "${task.name}" to GitHub?`)) {
+                    pushToGitHub(projectId, taskIndex);
+                }
+            }
+        }
+
+        async function pushToGitHub(projectId, taskIndex) {
+            if (!AppState.github.connected) {
+                showNotification('Please connect to GitHub first', 'warning');
+                return;
+            }
+
+            const project = projectData[projectId];
+            const task = project.tasks[taskIndex];
+            
+            try {
+                addLog('INFO', `Pushing to GitHub: ${task.name}`);
+                
+                // Create commit message
+                const commitMessage = `✓ Complete: ${task.name}\n\nProject: ${project.title}\nEstimated Hours: ${task.estimatedHours}\n\nRequirements completed:\n${task.requirements.map(r => `- ${r}`).join('\n')}`;
+                
+                // Here you would implement actual GitHub API calls
+                // For now, we'll simulate it
+                showNotification(`Pushed to GitHub: ${task.name}`, 'success');
+                addLog('SUCCESS', `Successfully pushed task to GitHub`);
+                
+                // Mark as synced
+                const taskKey = `task-${projectId}-${taskIndex}`;
+                localStorage.setItem(`${taskKey}-synced`, 'true');
+                
+            } catch (error) {
+                addLog('ERROR', `Failed to push to GitHub: ${error.message}`);
+                showNotification('Failed to push to GitHub', 'error');
+            }
+        }
+
+        function updateProjectStatus(projectId) {
+            const project = projectData[projectId];
+            let completedCount = 0;
+            let inProgressCount = 0;
+            
+            project.tasks.forEach((task, index) => {
+                const status = localStorage.getItem(`task-${projectId}-${index}`);
+                if (status === 'completed') completedCount++;
+                else if (status === 'in-progress') inProgressCount++;
+            });
+            
+            const statusElement = document.getElementById(`status-${projectId}`);
+            if (statusElement) {
+                if (completedCount === project.tasks.length) {
+                    statusElement.className = 'project-status status-completed';
+                    statusElement.textContent = '✓';
+                } else if (inProgressCount > 0 || completedCount > 0) {
+                    statusElement.className = 'project-status status-in-progress';
+                    statusElement.textContent = '◐';
+                } else {
+                    statusElement.className = 'project-status status-not-started';
+                    statusElement.textContent = '○';
+                }
+            }
+            
+            // Update phase progress
+            updatePhaseProgress();
+        }
+
+        function updatePhaseProgress() {
+            // Calculate progress for each phase
+            const phases = {};
+            
+            Object.entries(projectData).forEach(([projectId, project]) => {
+                if (!phases[project.phase]) {
+                    phases[project.phase] = { total: 0, completed: 0 };
+                }
+                
+                phases[project.phase].total += project.tasks.length;
+                
+                project.tasks.forEach((task, index) => {
+                    const status = localStorage.getItem(`task-${projectId}-${index}`);
+                    if (status === 'completed') {
+                        phases[project.phase].completed++;
+                    }
+                });
+            });
+            
+            // Update phase progress bars
+            Object.entries(phases).forEach(([phase, data]) => {
+                const progress = data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0;
+                const progressBar = document.getElementById(`phase${phase}Progress`);
+                const progressText = document.getElementById(`phase${phase}Text`);
+                
+                if (progressBar) progressBar.style.width = `${progress}%`;
+                if (progressText) progressText.textContent = `${progress}% Complete`;
+            });
+        }
+
+        function updateOverallProgress() {
+            let totalTasks = 0;
+            let completedTasks = 0;
+            
+            Object.entries(projectData).forEach(([projectId, project]) => {
+                totalTasks += project.tasks.length;
+                
+                project.tasks.forEach((task, index) => {
+                    const status = localStorage.getItem(`task-${projectId}-${index}`);
+                    if (status === 'completed') {
+                        completedTasks++;
+                    }
+                });
+            });
+            
+            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            
+            // Update UI elements
+            document.getElementById('overallProgress').textContent = `${progress}%`;
+            document.getElementById('progressPercentage').textContent = `${progress}%`;
+            document.getElementById('completedTasks').textContent = `${completedTasks}/${totalTasks}`;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            
+            // Update progress text
+            let progressText = '';
+            if (progress === 0) {
+                progressText = '🚀 Ready to build Ultimate Scraper! Connect GitHub to start tracking progress.';
+            } else if (progress < 25) {
+                progressText = `🔨 Foundation phase ${progress}% complete - Setting up the core infrastructure!`;
+            } else if (progress < 50) {
+                progressText = `⚡ Great progress! ${progress}% complete - Core systems taking shape.`;
+            } else if (progress < 75) {
+                progressText = `🎯 Amazing work! ${progress}% complete - Advanced features coming together.`;
+            } else {
+                progressText = `🏆 Almost there! ${progress}% complete - Ultimate Scraper nearly ready!`;
+            }
+            
+            document.getElementById('progressText').textContent = progressText;
+            
+            // Update milestones
+            updateMilestones(progress);
+        }
+
+        function updateMilestones(progress) {
+            const milestones = [
+                { id: 'milestone1', threshold: 25 },
+                { id: 'milestone2', threshold: 50 },
+                { id: 'milestone3', threshold: 75 },
+                { id: 'milestone4', threshold: 100 }
+            ];
+
+            milestones.forEach(milestone => {
+                const element = document.getElementById(milestone.id);
+                if (!element) return;
+
+                element.classList.remove('current', 'completed');
+                
+                if (progress >= milestone.threshold) {
+                    element.classList.add('completed');
+                } else if (progress >= milestone.threshold - 25) {
+                    element.classList.add('current');
+                }
+            });
+        }
+
+        // Theme Management
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            AppState.settings.theme = theme;
+            
+            // Update theme selector
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-theme') === theme);
+            });
+            
+            addLog('INFO', `Theme changed to ${theme}`);
+        }
+
+        // Settings Functions
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('active');
+        }
+
+        function togglePlugin(element, pluginName) {
+            element.classList.toggle('active');
+            const isActive = element.classList.contains('active');
+            
+            if (isActive) {
+                PluginManager.enable(pluginName);
+                showNotification(`Plugin enabled: ${pluginName}`, 'success');
+            } else {
+                PluginManager.disable(pluginName);
+                showNotification(`Plugin disabled: ${pluginName}`, 'info');
+            }
+        }
+
+        function openPluginStore() {
+            showNotification('Plugin store coming soon!', 'info');
+            addLog('INFO', 'Plugin store requested');
+        }
+
+        function toggleNotifications(element) {
+            element.classList.toggle('active');
+            const enabled = element.classList.contains('active');
+            AppState.settings.notifications = enabled;
+            localStorage.setItem('notifications', enabled);
+        }
+
+        function toggleSound(element) {
+            element.classList.toggle('active');
+            const enabled = element.classList.contains('active');
+            AppState.settings.sound = enabled;
+            localStorage.setItem('sound', enabled);
+        }
+
+        function toggleAutoSync(element) {
+            element.classList.toggle('active');
+            const enabled = element.classList.contains('active');
+            
+            if (enabled) {
+                startAutoSync();
+            } else {
+                stopAutoSync();
+            }
+        }
+
+        function toggleLiveUpdates(element) {
+            element.classList.toggle('active');
+            const enabled = element.classList.contains('active');
+            
+            if (enabled) {
+                addLog('INFO', 'Live updates enabled');
+            } else {
+                addLog('INFO', 'Live updates disabled');
+            }
+        }
+
+        // Chat Functions
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            const chatIcon = document.getElementById('chatIcon');
+            const isActive = chatWindow.classList.contains('active');
+            
+            if (isActive) {
+                chatWindow.classList.remove('active');
+                chatIcon.textContent = '💬';
+            } else {
+                chatWindow.classList.add('active');
+                chatIcon.textContent = '×';
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+        function handleChatKeypress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addChatMessage(message, 'user');
+            input.value = '';
+            
+            // Simulate AI response
+            setTimeout(() => {
+                const responses = [
+                    "I can help you track your Ultimate Scraper project progress. What would you like to know?",
+                    "Great question! Let me analyze your project data...",
+                    "Based on your current progress, I recommend focusing on the scraping engine tasks.",
+                    "Would you like me to generate a progress report for your project?",
+                    "I see you're working on the Ultimate Scraper. The foundation phase is critical for success!"
+                ];
+                
+                const response = responses[Math.floor(Math.random() * responses.length)];
+                addChatMessage(response, 'assistant');
+            }, 1000);
+        }
+
+        function addChatMessage(message, sender) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                margin-bottom: 15px;
+                padding: 10px 15px;
+                border-radius: 10px;
+                ${sender === 'user' ? 
+                    'background: var(--accent-primary); color: white; margin-left: 20%; text-align: right;' : 
+                    'background: var(--bg-secondary); color: var(--text-primary); margin-right: 20%;'}
+            `;
+            messageDiv.textContent = message;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // GitHub Integration
+        async function connectToGitHub() {
+            const repoUrl = document.getElementById('repoUrl').value.trim();
+            const token = document.getElementById('githubToken').value.trim();
+            const btn = document.getElementById('githubConnectBtn');
+            const btnText = document.getElementById('githubBtnText');
+            const spinner = document.getElementById('githubSpinner');
+            const status = document.getElementById('githubStatus');
+
+            if (!repoUrl || !token) {
+                showStatus('githubStatus', 'Please enter both repository URL and GitHub token', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.textContent = 'Connecting...';
+            spinner.classList.remove('hidden');
+
+            try {
+                // Simulate GitHub connection
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                AppState.github.connected = true;
+                AppState.github.token = token;
+                AppState.github.repoData = { url: repoUrl };
+                AppState.github.lastSync = new Date();
+
+                showStatus('githubStatus', '✓ Connected to GitHub repository', 'success');
+                updateSyncStatus('github', 'connected');
+                addLog('SUCCESS', `Connected to GitHub: ${repoUrl}`);
+                showNotification('GitHub connected successfully!', 'success');
+
+            } catch (error) {
+                showStatus('githubStatus', `× Connection failed: ${error.message}`, 'error');
+                addLog('ERROR', `GitHub connection failed: ${error.message}`);
+                showNotification('Failed to connect to GitHub', 'error');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Connect Repository';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        // HubSpot Integration
+        async function connectToHubSpot() {
+            const apiKey = document.getElementById('hubspotApiKey').value.trim();
+            const portalId = document.getElementById('hubspotPortal').value.trim();
+            const frequency = document.getElementById('syncFrequency').value;
+            const btn = document.getElementById('hubspotConnectBtn');
+            const btnText = document.getElementById('hubspotBtnText');
+            const spinner = document.getElementById('hubspotSpinner');
+
+            if (!apiKey || !portalId) {
+                showStatus('hubspotStatus', 'Please enter both API key and Portal ID', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.textContent = 'Connecting...';
+            spinner.classList.remove('hidden');
+
+            try {
+                // Simulate HubSpot connection
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                AppState.hubspot.connected = true;
+                AppState.hubspot.apiKey = apiKey;
+                AppState.hubspot.portalId = portalId;
+                AppState.hubspot.lastSync = new Date();
+                AppState.sync.frequency = parseInt(frequency);
+
+                showStatus('hubspotStatus', `✓ Connected to HubSpot Portal ${portalId}`, 'success');
+                updateSyncStatus('hubspot', 'connected');
+                addLog('SUCCESS', `Connected to HubSpot portal: ${portalId}`);
+                showNotification('HubSpot connected successfully!', 'success');
+
+            } catch (error) {
+                showStatus('hubspotStatus', `× Connection failed: ${error.message}`, 'error');
+                addLog('ERROR', `HubSpot connection failed: ${error.message}`);
+                showNotification('Failed to connect to HubSpot', 'error');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Connect HubSpot';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        function showStatus(elementId, message, type) {
+            const statusDiv = document.getElementById(elementId);
+            statusDiv.textContent = message;
+            statusDiv.className = `connection-status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        function updateSyncStatus(service, status) {
+            const statusElement = document.getElementById(`${service}SyncStatus`);
+            const lastSyncElement = document.getElementById(`${service}LastSync`);
+            
+            if (statusElement) {
+                statusElement.textContent = `${service.charAt(0).toUpperCase() + service.slice(1)}: ${status.charAt(0).toUpperCase() + status.slice(1)}`;
+                statusElement.className = `sync-status ${status}`;
+            }
+            
+            if (lastSyncElement && AppState[service].lastSync) {
+                lastSyncElement.textContent = AppState[service].lastSync.toLocaleTimeString();
+            }
+        }
+
+        // Quick Actions
+        function forceSyncAll() {
+            addLog('INFO', 'Manual sync triggered');
+            showNotification('Syncing all connected services...', 'info');
+            
+            setTimeout(() => {
+                if (AppState.github.connected) {
+                    AppState.github.lastSync = new Date();
+                    updateSyncStatus('github', 'connected');
+                }
+                
+                if (AppState.hubspot.connected) {
+                    AppState.hubspot.lastSync = new Date();
+                    updateSyncStatus('hubspot', 'connected');
+                }
+                
+                showNotification('Sync completed successfully!', 'success');
+                addLog('SUCCESS', 'All services synced');
+            }, 2000);
+        }
+
+        function generateReport() {
+            addLog('INFO', 'Generating project report');
+            showNotification('Generating comprehensive report...', 'info');
+            
+            const report = {
+                project: 'Ultimate Scraper',
+                timestamp: new Date().toISOString(),
+                progress: {
+                    overall: document.getElementById('overallProgress').textContent,
+                    tasks: document.getElementById('completedTasks').textContent
+                },
+                integrations: {
+                    github: AppState.github.connected,
+                    hubspot: AppState.hubspot.connected
+                }
+            };
+            
+            // Download report
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ultimate-scraper-report-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification('Report generated and downloaded!', 'success');
+        }
+
+        function updateHubSpot() {
+            if (!AppState.hubspot.connected) {
+                showNotification('Please connect HubSpot first', 'warning');
+                return;
+            }
+            
+            addLog('INFO', 'Updating HubSpot with project data');
+            showNotification('Updating HubSpot...', 'info');
+            
+            setTimeout(() => {
+                showNotification('HubSpot updated successfully!', 'success');
+                addLog('SUCCESS', 'HubSpot data synchronized');
+            }, 1500);
+        }
+
+        function exportData() {
+            addLog('INFO', 'Exporting project data');
+            const exportData = {
+                appState: AppState,
+                projectData: projectData,
+                taskProgress: {},
+                exportTime: new Date().toISOString()
+            };
+            
+            // Add task progress
+            Object.entries(projectData).forEach(([projectId, project]) => {
+                exportData.taskProgress[projectId] = [];
+                project.tasks.forEach((task, index) => {
+                    const status = localStorage.getItem(`task-${projectId}-${index}`) || 'not-started';
+                    exportData.taskProgress[projectId].push({
+                        task: task.name,
+                        status: status
+                    });
+                });
+            });
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ultimate-scraper-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification('Data exported successfully!', 'success');
+        }
+
+        function scheduleDemo() {
+            addLog('INFO', 'Demo scheduling requested');
+            showNotification('Opening calendar for demo scheduling...', 'info');
+            window.open('https://calendly.com', '_blank');
+        }
+
+        function createTask() {
+            const taskName = prompt('Enter new task name:');
+            if (taskName) {
+                addLog('INFO', `New task created: ${taskName}`);
+                showNotification(`Task "${taskName}" created!`, 'success');
+            }
+        }
+
+        // Auto-sync functionality
+        function startAutoSync() {
+            if (AppState.sync.interval) {
+                clearInterval(AppState.sync.interval);
+            }
+            
+            AppState.sync.autoSync = true;
+            const statusElement = document.getElementById('autoSyncStatus');
+            if (statusElement) {
+                statusElement.textContent = 'Auto-sync: Enabled';
+                statusElement.className = 'sync-status connected';
+            }
+            
+            AppState.sync.interval = setInterval(() => {
+                forceSyncAll();
+            }, AppState.sync.frequency * 60 * 1000);
+            
+            updateNextSyncTime();
+            addLog('INFO', `Auto-sync enabled - every ${AppState.sync.frequency} minutes`);
+        }
+
+        function stopAutoSync() {
+            if (AppState.sync.interval) {
+                clearInterval(AppState.sync.interval);
+                AppState.sync.interval = null;
+            }
+            
+            AppState.sync.autoSync = false;
+            const statusElement = document.getElementById('autoSyncStatus');
+            if (statusElement) {
+                statusElement.textContent = 'Auto-sync: Disabled';
+                statusElement.className = 'sync-status';
+            }
+            
+            document.getElementById('nextSync').textContent = 'N/A';
+            addLog('INFO', 'Auto-sync disabled');
+        }
+
+        function updateNextSyncTime() {
+            if (AppState.sync.autoSync) {
+                const nextSync = new Date(Date.now() + AppState.sync.frequency * 60 * 1000);
+                document.getElementById('nextSync').textContent = nextSync.toLocaleTimeString();
+            }
+        }
+
+        // Utility Functions
+        function showNotification(message, type = 'info') {
+            if (!AppState.settings.notifications) return;
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 5px;">${type.toUpperCase()}</div>
+                <div>${message}</div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 4000);
+            
+            // Play sound if enabled
+            if (AppState.settings.sound) {
+                // Play notification sound (you would add actual sound files)
+                console.log('🔊 Notification sound');
+            }
+        }
+
+        function addLog(level, message) {
+            const logsContainer = document.getElementById('activityLogs');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <div class="log-time">[${timestamp}]</div>
+                <div class="log-level log-${level.toLowerCase()}">${level}</div>
+                <div>${message}</div>
+            `;
+            
+            logsContainer.insertBefore(logEntry, logsContainer.firstChild);
+            
+            // Keep only last 50 entries
+            while (logsContainer.children.length > 50) {
+                logsContainer.removeChild(logsContainer.lastChild);
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Apply saved theme
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            setTheme(savedTheme);
+            
+            // Load plugin states
+            PluginManager.loadAll();
+            
+            // Initialize progress
+            updateOverallProgress();
+            updatePhaseProgress();
+            
+            // Initialize all project statuses
+            Object.keys(projectData).forEach(projectId => {
+                updateProjectStatus(projectId);
+            });
+            
+            addLog('INFO', 'MK Processor Ultimate Dashboard initialized');
+            addLog('INFO', 'Ready to track Ultimate Scraper development');
+            
+            // Set initial values
+            document.getElementById('teamVelocity').textContent = '12';
+            document.getElementById('velocityChange').textContent = 'Story points/week';
+        });
+
+        // Register example plugins
+        PluginManager.register('github-advanced', {
+            name: 'GitHub Advanced',
+            enabled: false,
+            onEnable() {
+                addLog('INFO', 'GitHub Advanced plugin enabled');
+            },
+            onDisable() {
+                addLog('INFO', 'GitHub Advanced plugin disabled');
+            }
+        });
+
+        PluginManager.register('ai-pro', {
+            name: 'AI Assistant Pro',
+            enabled: false,
+            onEnable() {
+                addLog('INFO', 'AI Assistant Pro enabled');
+            },
+            onDisable() {
+                addLog('INFO', 'AI Assistant Pro disabled');
+            }
+        });
+
+        // Close modals on escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeTaskModal();
+                if (document.getElementById('settingsPanel').classList.contains('active')) {
+                    toggleSettings();
+                }
+                if (document.getElementById('chatWindow').classList.contains('active')) {
+                    toggleChat();
+                }
+            }
+        });
+
+        // Close modals on outside click
+        document.getElementById('taskModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTaskModal();
+            }
+        });
+
+        console.log('✅ MK Processor Ultimate loaded successfully');
+        console.log('🔗 Track your Ultimate Scraper project with live GitHub integration');
+        console.log('🔌 Plugin system ready for extensions');
+    </script>
+
+<!-- MK Processor API Integration -->
+<script>
+// API Configuration
+const API_BASE = 'http://localhost:8000';
+
+// Check backend connection
+async function checkBackendStatus() {
+    try {
+        const response = await fetch(API_BASE + '/health');
+        const data = await response.json();
+        console.log('Backend Status:', data);
+        
+        // Update UI to show connection status
+        const statusElement = document.querySelector('.stat-card') || document.body;
+        if (data.status === 'running') {
+            console.log('✓ Backend Connected');
+        }
+    } catch (error) {
+        console.error('× Backend Connection Failed:', error);
+    }
+}
+
+// Load jobs from backend
+async function loadJobs() {
+    try {
+        const response = await fetch(API_BASE + '/api/jobs/');
+        const jobs = await response.json();
+        console.log('Jobs:', jobs);
+        return jobs;
+    } catch (error) {
+        console.error('Failed to load jobs:', error);
+        return [];
+    }
+}
+
+// Create new job
+async function createScrapingJob(models, prefix = '', name = 'MK Scraping Job') {
+    try {
+        const response = await fetch(API_BASE + '/api/jobs/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ models, prefix, name })
+        });
+        const job = await response.json();
+        console.log('Job Created:', job);
+        return job;
+    } catch (error) {
+        console.error('Failed to create job:', error);
+        throw error;
+    }
+}
+
+// WebSocket connection for real-time updates
+function connectWebSocket() {
+    const ws = new WebSocket('ws://localhost:8000/ws');
+    
+    ws.onopen = () => console.log('WebSocket Connected');
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('WebSocket Message:', data);
+        
+        // Update UI based on message type
+        if (data.type === 'job_update') {
+            updateJobProgress(data.data);
+        }
+    };
+    ws.onerror = (error) => console.error('WebSocket Error:', error);
+    ws.onclose = () => {
+        console.log('WebSocket Disconnected, reconnecting...');
+        setTimeout(connectWebSocket, 5000);
+    };
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    checkBackendStatus();
+    loadJobs();
+    connectWebSocket();
+    
+    // Refresh status every 10 seconds
+    setInterval(checkBackendStatus, 10000);
+});
+
+// Helper function to update job progress in UI
+function updateJobProgress(job) {
+    console.log('Updating job progress:', job);
+    // Add your UI update logic here
+}
+</script>
+<!-- Add this section to your dashboard after the existing content -->
+<div class="job-section" style="margin-top: 40px; padding: 30px; background: #1e293b; border-radius: 15px; border: 1px solid #334155;">
+    <h2 style="color: #a78bfa; margin-bottom: 20px;">📋 Scraping Jobs</h2>
+    
+    <!-- Job Creation Form -->
+    <div class="job-creation-form" style="background: #0f172a; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+        <h3 style="color: #e2e8f0; margin-bottom: 15px;">Create New Scraping Job</h3>
+        
+        <div style="display: grid; gap: 15px;">
+            <div>
+                <label style="display: block; color: #94a3b8; margin-bottom: 5px;">Job Name:</label>
+                <input type="text" id="jobName" placeholder="ULTRATHINK Scrape" style="width: 100%; padding: 10px; background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #e2e8f0;">
+            </div>
+            
+            <div>
+                <label style="display: block; color: #94a3b8; margin-bottom: 5px;">Model Numbers (comma-separated):</label>
+                <textarea id="modelNumbers" rows="3" placeholder="MODEL-001, MODEL-002, MODEL-003" style="width: 100%; padding: 10px; background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #e2e8f0; resize: vertical;"></textarea>
+            </div>
+            
+            <div>
+                <label style="display: block; color: #94a3b8; margin-bottom: 5px;">Prefix (optional):</label>
+                <input type="text" id="modelPrefix" placeholder="TEST-" style="width: 100%; padding: 10px; background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #e2e8f0;">
+            </div>
+            
+            <button onclick="createScrapingJob()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s;">
+                ➕ Create Scraping Job
+            </button>
+        </div>
+    </div>
+    
+    <!-- Active Jobs List -->
+    <div class="active-jobs">
+        <h3 style="color: #e2e8f0; margin-bottom: 15px;">Active Jobs</h3>
+        <div id="jobsList" style="display: grid; gap: 15px;"><p style="color: #64748b;">No active jobs</p></div>
+    </div>
+</div>
+
+<script>
+// Add WebSocket connection for real-time updates
+let ws = null;
+
+function connectWebSocket() {
+    ws = new WebSocket('ws://localhost:8000/ws');
+    
+    ws.onopen = () => {
+        console.log('WebSocket connected');
+        fetchJobs();
+    };
+    
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'job_update') {
+            updateJobDisplay(data.job);
+        }
+    };
+    
+    ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+    };
+    
+    ws.onclose = () => {
+        console.log('WebSocket disconnected, reconnecting...');
+        setTimeout(connectWebSocket, 3000);
+    };
+}
+
+async function createScrapingJob() {
+    const jobName = document.getElementById('jobName').value || 'ULTRATHINK Scrape';
+    const modelsText = document.getElementById('modelNumbers').value;
+    const prefix = document.getElementById('modelPrefix').value;
+    
+    if (!modelsText) {
+        alert('Please enter at least one model number');
+        return;
+    }
+    
+    const models = modelsText.split(',').map(m => m.trim()).filter(m => m);
+    
+    const jobData = {
+        name: jobName,
+        models: models,
+        prefix: prefix
+    };
+    
+    try {
+        const response = await fetch('http://localhost:8000/jobs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(jobData)
+        });
+        
+        if (response.ok) {
+            const job = await response.json();
+            console.log('Job created:', job);
+            
+            // Clear form
+            document.getElementById('jobName').value = '';
+            document.getElementById('modelNumbers').value = '';
+            document.getElementById('modelPrefix').value = '';
+            
+            // Refresh jobs list
+            fetchJobs();
+        } else {
+            alert('Failed to create job');
+        }
+    } catch (error) {
+        console.error('Error creating job:', error);
+        alert('Error creating job: ' + error.message);
+    }
+}
+
+async function fetchJobs() {
+    try {
+        const response = await fetch('http://localhost:8000/jobs');
+        const jobs = await response.json();
+        displayJobs(jobs);
+    } catch (error) {
+        console.error('Error fetching jobs:', error);
+    }
+}
+
+function displayJobs(jobs) {
+    const jobsList = document.getElementById('jobsList');
+    
+    if (jobs.length === 0) {
+        jobsList.innerHTML = '<p style="color: #64748b;">No active jobs</p>';
+        return;
+    }
+    
+    jobsList.innerHTML = jobs.map(job => `
+        <div class="job-card" style="background: #0f172a; padding: 20px; border-radius: 10px; border: 1px solid #334155;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                <div>
+                    <h4 style="color: #a78bfa; margin: 0;">${job.name}</h4>
+                    <p style="color: #64748b; font-size: 14px; margin-top: 5px;">ID: ${job.id}</p>
+                </div>
+                <span class="status-badge" style="padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: 600; background: ${getStatusColor(job.status)}; color: white;">
+                    ${job.status}
+                </span>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <p style="color: #94a3b8; font-size: 14px;">Models: ${job.models.length}</p>
+                <p style="color: #94a3b8; font-size: 14px;">Created: ${new Date(job.created_at).toLocaleString()}</p>
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; color: #94a3b8; font-size: 14px; margin-bottom: 5px;">
+                    <span>Progress</span>
+                    <span>${job.progress}%</span>
+                </div>
+                <div style="width: 100%; height: 8px; background: #334155; border-radius: 4px; overflow: hidden;">
+                    <div style="width: ${job.progress}%; height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); transition: width 0.5s ease;"></div>
+                </div>
+            </div>
+            
+            ${job.status === 'completed' ? `
+                <button onclick="downloadResults('${job.id}')" style="background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                    ⬇ Download Results
+                </button>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+function getStatusColor(status) {
+    switch(status) {
+        case 'pending': return '#f59e0b';
+        case 'running': return '#3b82f6';
+        case 'completed': return '#22c55e';
+        case 'failed': return '#ef4444';
+        default: return '#64748b';
+    }
+}
+
+function updateJobDisplay(job) {
+    // Update specific job in the display
+    fetchJobs(); // For now, just refresh all jobs
+}
+
+async function downloadResults(jobId) {
+    // Implement download functionality
+    window.open(`http://localhost:8000/jobs/${jobId}/download`, '_blank');
+}
+
+// Initialize WebSocket connection when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    connectWebSocket();
+    
+    // Poll for updates every 2 seconds as backup
+    setInterval(fetchJobs, 2000);
+});
+</script>
+
+</body></html>

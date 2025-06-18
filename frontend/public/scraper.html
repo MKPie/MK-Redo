@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MK Processor - Model Scraper</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .input-hint {
+            font-size: 0.875rem;
+            color: #718096;
+            margin-top: 4px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .status h3 {
+            color: #4a5568;
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+        }
+        .job-item {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+        .job-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-1px);
+        }
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .job-id {
+            font-weight: 600;
+            color: #667eea;
+        }
+        .job-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-running { background: #dbeafe; color: #1e40af; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-failed { background: #fee2e2; color: #991b1b; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.5s ease;
+        }
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 12px;
+            display: none;
+        }
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 12px;
+            display: none;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MK Processor Scraper</h1>
+        <p class="subtitle">Extract product data from model numbers</p>
+        
+        <div class="form-group">
+            <label for="models">Model Numbers</label>
+            <textarea id="models" placeholder="Enter model numbers, one per line or comma-separated&#10;Example:&#10;DCS-36&#10;DCS-48&#10;UC-48R"></textarea>
+            <div class="input-hint">Enter the model numbers you want to scrape</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="prefix">Prefix (Optional)</label>
+            <input type="text" id="prefix" placeholder="e.g., DCS">
+            <div class="input-hint">Common prefix for model numbers (if applicable)</div>
+        </div>
+        
+        <button id="startBtn" onclick="createJob()">
+            <span id="btnText">Start Scraping</span>
+            <span id="btnSpinner" class="spinner" style="display: none;"></span>
+        </button>
+        
+        <div id="errorMsg" class="error-message"></div>
+        <div id="successMsg" class="success-message"></div>
+        
+        <div class="status" id="statusSection" style="display: none;">
+            <h3>Active Jobs</h3>
+            <div id="jobsList"></div>
+        </div>
+    </div>
+
+    <script>
+        let activeJobs = [];
+        
+        async function createJob() {
+            const modelsText = document.getElementById('models').value.trim();
+            const prefix = document.getElementById('prefix').value.trim();
+            const btn = document.getElementById('startBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            
+            if (!modelsText) {
+                showError('Please enter at least one model number');
+                return;
+            }
+            
+            // Parse models (handle both comma and newline separated)
+            const models = modelsText
+                .split(/[\n,]+/)
+                .map(m => m.trim())
+                .filter(m => m.length > 0);
+            
+            if (models.length === 0) {
+                showError('No valid model numbers found');
+                return;
+            }
+            
+            // Disable button and show spinner
+            btn.disabled = true;
+            btnText.textContent = 'Creating job...';
+            btnSpinner.style.display = 'inline-block';
+            
+            try {
+                const response = await fetch('http://localhost:8000/jobs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        models: models,
+                        prefix: prefix || '',
+                        name: `Scrape ${models.length} models`
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const job = await response.json();
+                console.log('Job created:', job);
+                
+                // Clear form
+                document.getElementById('models').value = '';
+                document.getElementById('prefix').value = '';
+                
+                showSuccess(`Job created successfully! Scraping ${models.length} models...`);
+                document.getElementById('statusSection').style.display = 'block';
+                
+                // Start polling for job updates
+                startPolling();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Failed to create job: ${error.message}`);
+            } finally {
+                // Re-enable button
+                btn.disabled = false;
+                btnText.textContent = 'Start Scraping';
+                btnSpinner.style.display = 'none';
+            }
+        }
+        
+        async function loadJobs() {
+            try {
+                const response = await fetch('http://localhost:8000/jobs');
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const jobs = await response.json();
+                activeJobs = jobs;
+                
+                const jobsList = document.getElementById('jobsList');
+                
+                if (jobs.length === 0) {
+                    jobsList.innerHTML = '<p style="color: #718096;">No active jobs</p>';
+                } else {
+                    jobsList.innerHTML = jobs.map(job => `
+                        <div class="job-item">
+                            <div class="job-header">
+                                <span class="job-id">${job.id}</span>
+                                <span class="job-status status-${job.status}">${job.status}</span>
+                            </div>
+                            <div>
+                                <strong>Models:</strong> ${job.models.join(', ')}<br>
+                                <strong>Created:</strong> ${new Date(job.created_at).toLocaleString()}
+                            </div>
+                            ${job.status === 'running' ? `
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${job.progress || 0}%"></div>
+                                </div>
+                                <div style="text-align: center; color: #718096; font-size: 0.875rem;">
+                                    ${job.progress || 0}% complete
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('');
+                }
+                
+                // Hide status section if no jobs
+                if (jobs.length === 0) {
+                    document.getElementById('statusSection').style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+            }
+        }
+        
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            setTimeout(() => {
+                errorMsg.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const successMsg = document.getElementById('successMsg');
+            successMsg.textContent = message;
+            successMsg.style.display = 'block';
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 5000);
+        }
+        
+        let pollingInterval;
+        
+        function startPolling() {
+            // Load immediately
+            loadJobs();
+            
+            // Clear any existing interval
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+            
+            // Poll every 2 seconds
+            pollingInterval = setInterval(() => {
+                loadJobs();
+                
+                // Stop polling if all jobs are completed
+                if (activeJobs.every(job => job.status === 'completed' || job.status === 'failed')) {
+                    clearInterval(pollingInterval);
+                }
+            }, 2000);
+        }
+        
+        // Load jobs on page load
+        window.addEventListener('load', () => {
+            loadJobs();
+        });
+    </script>
+</body>
+</html>

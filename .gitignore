@@ -1,43 +1,42 @@
 ﻿# Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-.env
-*.env
+*.class
+*.pyc
 
-# Docker
+# Environment files
+.env
+.env.*
+.env.local
+
+# Secrets
+*github_pat*
+*.pem
+*.key
+
+# Docker volumes
+data/
+backups/
+postgres_data/
+redis_data/
+
+# Logs
 *.log
-tmp/
+logs/
 
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# Windows
+# OS
+.DS_Store
 Thumbs.db
-ehthumbs.db
-Desktop.ini
 
-# Project specific
-data/
-backups/
+# Database
+*.sql
+*.dump
 *.db
-node_modules/
-dist/
-build/
 
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-.env.local
+# Backup files
+*.backup
+*.bak

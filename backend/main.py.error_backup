@@ -1,0 +1,868 @@
+﻿from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Response
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Dict, Optional
+from datetime import datetime
+import asyncio
+import uuid
+import json
+import logging
+import os
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Create FastAPI app
+app = FastAPI(title="MK Processor API", version="1.0.0")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Import the scraper (with error handling)
+try:
+    from scraper_wrapper import scrape_katom_products, cleanup_scraper
+    logger.info("Scraper module imported successfully")
+except ImportError as e:
+    logger.error(f"Failed to import scraper: {e}")
+    # Define mock functions to prevent crashes
+    async def scrape_katom_products(*args, **kwargs):
+        return {"success": [], "failed": [], "summary": {"total_models": 0}}
+    async def cleanup_scraper():
+        pass
+
+# In-memory job storage
+jobs_db: Dict[str, Dict] = {}
+active_connections = []
+
+# Pydantic models
+class JobCreate(BaseModel):
+    models: List[str]
+    prefix: Optional[str] = ""
+    name: Optional[str] = "Katom Product Scrape"
+
+class JobResponse(BaseModel):
+    id: str
+    name: str
+    models: List[str]
+    prefix: str
+    status: str
+    progress: int
+    created_at: str
+    updated_at: str
+    results: Optional[Dict] = None
+    error: Optional[str] = None
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+
+# Root endpoint
+@app.get("/")
+async def root():
+    return {"message": "MK Processor API", "version": "1.0.0", "docs": "/docs"}
+
+# Jobs endpoints
+@app.post("/jobs", response_model=JobResponse)
+async def create_job(job: JobCreate, background_tasks: BackgroundTasks):
+    """Create a new scraping job"""
+    job_id = f"job_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+    
+    job_data = {
+        "id": job_id,
+        "name": job.name,
+        "models": job.models,
+        "prefix": job.prefix,
+        "status": "pending",
+        "progress": 0,
+        "created_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.utcnow().isoformat(),
+        "results": None,
+        "error": None
+    }
+    
+    jobs_db[job_id] = job_data
+    
+    # Start scraping in background
+    background_tasks.add_task(run_scraper_job, job_id, job.models, job.prefix)
+    
+    return JobResponse(**job_data)
+
+@app.get("/jobs", response_model=List[JobResponse])
+async def get_jobs(status: Optional[str] = None, limit: int = 100):
+    """Get all jobs or filter by status"""
+    jobs = jobs_db
+    
+    if status:
+        jobs = [job for job in jobs if job["status"] == status]
+        
+    # Sort by created_at descending
+    jobs.sort(key=lambda x: x["created_at"], reverse=True)
+    
+    return jobs[:limit]
+
+@app.get("/jobs/{job_id}", response_model=JobResponse)
+async def get_job(job_id: str):
+    """Get a specific job by ID"""
+    if job_id not in jobs_db:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    return JobResponse(**jobs_db[job_id])
+
+# Background task to run scraper
+async def run_scraper_job(job_id: str, models: List[str], prefix: str):
+    """Run the scraping job in background"""
+    try:
+        # Update job status to running
+        jobs_db[job_id]["status"] = "running"
+        jobs_db[job_id]["updated_at"] = datetime.utcnow().isoformat()
+        
+        # Progress callback
+        async def update_progress(progress: int, message: str = ""):
+            jobs_db[job_id]["progress"] = progress
+            jobs_db[job_id]["updated_at"] = datetime.utcnow().isoformat()
+            logger.info(f"Job {job_id}: {progress}% - {message}")
+        
+        # Run the scraper
+        logger.info(f"Starting scrape job {job_id}")
+        results = await scrape_katom_products(
+            models=models,
+            prefix=prefix,
+            job_id=job_id,
+            progress_callback=update_progress
+        )
+        
+        # Update job with results
+        jobs_db[job_id]["status"] = "completed"
+        jobs_db[job_id]["progress"] = 100
+        jobs_db[job_id]["results"] = results
+        jobs_db[job_id]["updated_at"] = datetime.utcnow().isoformat()
+        logger.info(f"Job {job_id} completed successfully")
+        
+    except Exception as e:
+        logger.error(f"Job {job_id} failed: {str(e)}")
+        jobs_db[job_id]["status"] = "failed"
+        jobs_db[job_id]["error"] = str(e)
+        jobs_db[job_id]["updated_at"] = datetime.utcnow().isoformat()
+
+# WebSocket endpoint
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket endpoint for real-time updates"""
+    await websocket.accept()
+    active_connections.append(websocket)
+    logger.info("WebSocket client connected")
+    
+    try:
+        # Send initial state
+        await websocket.send_json({
+            "type": "connection",
+            "message": "Connected to MK Processor WebSocket",
+            "jobs_count": len(jobs_db)
+        })
+        
+        # Keep connection alive
+        while True:
+            await asyncio.sleep(30)
+            await websocket.send_json({"type": "ping"})
+            
+    except WebSocketDisconnect:
+        active_connections.remove(websocket)
+        logger.info("WebSocket client disconnected")
+
+# Startup event
+@app.on_event("startup")
+async def startup_event():
+    logger.info("MK Processor API starting up...")
+    logger.info(f"Jobs DB initialized: {len(jobs_db)} jobs")
+
+# Shutdown event
+@app.on_event("shutdown")
+async def shutdown_event():
+    logger.info("MK Processor API shutting down...")
+    await cleanup_scraper()
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+# Add this to the END of your backend/main.py file
+
+import sys
+import os
+sys.path.append('/app')
+
+# Import required modules
+from typing import List, Dict, Optional
+from datetime import datetime
+from pydantic import BaseModel
+import asyncio
+import json
+from fastapi import BackgroundTasks, HTTPException, WebSocket, WebSocketDisconnect
+import logging
+
+# Setup logging
+logger = logging.getLogger(__name__)
+
+# In-memory storage (will be replaced with database later)
+jobs_db = []
+websocket_connections = []
+
+# Pydantic models for API
+class JobCreate(BaseModel):
+    models: List[str]
+    prefix: Optional[str] = ""
+    name: Optional[str] = "ULTRATHINK Scrape"
+    description: Optional[str] = "Automated scraping job"
+
+class JobUpdate(BaseModel):
+    status: Optional[str] = None
+    progress: Optional[int] = None
+
+class JobResponse(BaseModel):
+    id: str
+    name: str
+    models: List[str]
+    prefix: str
+    status: str  # pending, running, completed, failed
+    progress: int  # 0-100
+    created_at: str
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+    results: Optional[Dict] = None
+    error: Optional[str] = None
+
+# Import scraper functions (try to import, handle if missing)
+try:
+    from scraper_main import *
+    SCRAPER_AVAILABLE = True
+    logger.info("✅ Scraper imported successfully")
+except ImportError as e:
+    SCRAPER_AVAILABLE = False
+    logger.warning(f"⚠️ Scraper not available: {e}")
+
+# Jobs Management Endpoints
+@app.post("/jobs", response_model=JobResponse)
+async def create_job(job: JobCreate, background_tasks: BackgroundTasks):
+    """Create a new scraping job"""
+    job_id = f"job_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:-3]}"
+    
+    job_data = {
+        "id": job_id,
+        "name": job.name,
+        "models": job.models,
+        "prefix": job.prefix,
+        "status": "pending",
+        "progress": 0,
+        "created_at": datetime.now().isoformat(),
+        "started_at": None,
+        "completed_at": None,
+        "results": None,
+        "error": None
+    }
+    
+    jobs_db.append(job_data)
+    logger.info(f"📝 Created job {job_id} with {len(job.models)} models")
+    
+    # Start scraping in background
+    background_tasks.add_task(run_scraper_job, job_id, job.models, job.prefix)
+    
+    # Notify WebSocket clients
+    await notify_websocket_clients({"type": "job_created", "job": job_data})
+    
+    return job_data
+
+@app.get("/jobs", response_model=List[JobResponse])
+async def get_jobs():
+    """Get all scraping jobs"""
+    return jobs_db
+
+@app.get("/jobs/{job_id}", response_model=JobResponse)
+async def get_job(job_id: str):
+    """Get specific job by ID"""
+    for job in jobs_db:
+        if job["id"] == job_id:
+            return job
+    raise HTTPException(status_code=404, detail="Job not found")
+
+@app.patch("/jobs/{job_id}")
+async def update_job(job_id: str, job_update: JobUpdate):
+    """Update job status or progress"""
+    for job in jobs_db:
+        if job["id"] == job_id:
+            if job_update.status:
+                job["status"] = job_update.status
+            if job_update.progress is not None:
+                job["progress"] = job_update.progress
+            
+            await notify_websocket_clients({"type": "job_updated", "job": job})
+            return job
+    
+    raise HTTPException(status_code=404, detail="Job not found")
+
+@app.delete("/jobs/{job_id}")
+async def delete_job(job_id: str):
+    """Delete a job"""
+    for i, job in enumerate(jobs_db):
+        if job["id"] == job_id:
+            deleted_job = jobs_db.pop(i)
+            await notify_websocket_clients({"type": "job_deleted", "job_id": job_id})
+            return {"message": f"Job {job_id} deleted successfully"}
+    
+    raise HTTPException(status_code=404, detail="Job not found")
+
+@app.get("/jobs/{job_id}/logs")
+async def get_job_logs(job_id: str):
+    """Get job execution logs"""
+    # TODO: Implement log retrieval from database or file system
+    return {"job_id": job_id, "logs": ["Job started", "Processing models...", "Job completed"]}
+
+@app.get("/progress")
+async def get_overall_progress():
+    """Get overall system progress"""
+    total_jobs = len(jobs_db)
+    completed_jobs = sum(1 for job in jobs_db if job["status"] == "completed")
+    running_jobs = sum(1 for job in jobs_db if job["status"] == "running")
+    failed_jobs = sum(1 for job in jobs_db if job["status"] == "failed")
+    
+    return {
+        "total_jobs": total_jobs,
+        "completed_jobs": completed_jobs,
+        "running_jobs": running_jobs,
+        "failed_jobs": failed_jobs,
+        "success_rate": (completed_jobs / total_jobs * 100) if total_jobs > 0 else 0,
+        "scraper_available": SCRAPER_AVAILABLE
+    }
+
+# WebSocket endpoint for real-time updates
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    websocket_connections.append(websocket)
+    logger.info(f"🔌 WebSocket connected. Total connections: {len(websocket_connections)}")
+    
+    try:
+        # Send initial data
+        await websocket.send_json({
+            "type": "connected",
+            "data": {
+                "jobs": len(jobs_db),
+                "active": sum(1 for j in jobs_db if j["status"] == "running")
+            }
+        })
+        
+        # Keep connection alive and send periodic updates
+        while True:
+            data = {
+                "type": "heartbeat",
+                "timestamp": datetime.now().isoformat(),
+                "jobs": len(jobs_db),
+                "active": sum(1 for j in jobs_db if j["status"] == "running"),
+                "completed": sum(1 for j in jobs_db if j["status"] == "completed")
+            }
+            await websocket.send_json(data)
+            await asyncio.sleep(10)  # Send heartbeat every 10 seconds
+            
+    except WebSocketDisconnect:
+        websocket_connections.remove(websocket)
+        logger.info(f"🔌 WebSocket disconnected. Total connections: {len(websocket_connections)}")
+
+# Background task to run scraping jobs
+async def run_scraper_job(job_id: str, models: List[str], prefix: str):
+    """Execute the actual scraping job"""
+    logger.info(f"🚀 Starting scraper job {job_id}")
+    
+    # Update job status to running
+    for job in jobs_db:
+        if job["id"] == job_id:
+            job["status"] = "running"
+            job["started_at"] = datetime.now().isoformat()
+            job["progress"] = 0
+            break
+    
+    await notify_websocket_clients({"type": "job_started", "job_id": job_id})
+    
+    try:
+        results = []
+        errors = []
+        
+        if SCRAPER_AVAILABLE:
+            # Use actual scraper
+            for i, model in enumerate(models):
+                try:
+                    logger.info(f"🔍 Scraping model: {model}")
+                    
+                    # TODO: Replace this with your actual scraper function call
+                    # Example: result = scrape_model(model, prefix)
+                    
+                    # For now, simulate scraping with delay
+                    await asyncio.sleep(3)  # Simulate scraping time
+                    
+                    # Simulate successful scraping result
+                    model_result = {
+                        "model": model,
+                        "prefix": prefix,
+                        "status": "success",
+                        "data": {
+                            "title": f"Scraped data for {model}",
+                            "images": 5,
+                            "metadata": {"scraped_at": datetime.now().isoformat()}
+                        },
+                        "scraped_at": datetime.now().isoformat()
+                    }
+                    
+                    results.append(model_result)
+                    
+                    # Update progress
+                    progress = int((i + 1) / len(models) * 100)
+                    for job in jobs_db:
+                        if job["id"] == job_id:
+                            job["progress"] = progress
+                            break
+                    
+                    await notify_websocket_clients({
+                        "type": "job_progress", 
+                        "job_id": job_id, 
+                        "progress": progress,
+                        "current_model": model
+                    })
+                    
+                    logger.info(f"✅ Completed {model} - Progress: {progress}%")
+                    
+                except Exception as e:
+                    logger.error(f"❌ Error scraping {model}: {e}")
+                    errors.append({
+                        "model": model,
+                        "error": str(e),
+                        "timestamp": datetime.now().isoformat()
+                    })
+        else:
+            # Simulate scraping when actual scraper is not available
+            logger.warning("⚠️ Using simulated scraping (actual scraper not available)")
+            for i, model in enumerate(models):
+                await asyncio.sleep(2)  # Simulate work
+                results.append({
+                    "model": model,
+                    "status": "simulated",
+                    "data": {"message": "Simulated scraping result"}
+                })
+                
+                progress = int((i + 1) / len(models) * 100)
+                for job in jobs_db:
+                    if job["id"] == job_id:
+                        job["progress"] = progress
+                        break
+                
+                await notify_websocket_clients({
+                    "type": "job_progress", 
+                    "job_id": job_id, 
+                    "progress": progress
+                })
+        
+        # Mark job as completed
+        final_results = {
+            "successful": len(results),
+            "failed": len(errors),
+            "results": results,
+            "errors": errors,
+            "summary": f"Processed {len(models)} models, {len(results)} successful, {len(errors)} failed"
+        }
+        
+        for job in jobs_db:
+            if job["id"] == job_id:
+                job["status"] = "completed"
+                job["progress"] = 100
+                job["completed_at"] = datetime.now().isoformat()
+                job["results"] = final_results
+                break
+        
+        await notify_websocket_clients({"type": "job_completed", "job_id": job_id})
+        logger.info(f"✅ Job {job_id} completed successfully")
+        
+        # TODO: Save results to database
+        # await save_results_to_db(job_id, final_results)
+        
+    except Exception as e:
+        logger.error(f"❌ Job {job_id} failed: {e}")
+        
+        # Mark job as failed
+        for job in jobs_db:
+            if job["id"] == job_id:
+                job["status"] = "failed"
+                job["error"] = str(e)
+                job["completed_at"] = datetime.now().isoformat()
+                break
+        
+        await notify_websocket_clients({"type": "job_failed", "job_id": job_id, "error": str(e)})
+
+# Helper function to notify WebSocket clients
+async def notify_websocket_clients(message: Dict):
+    """Send message to all connected WebSocket clients"""
+    if websocket_connections:
+        disconnected = []
+        for websocket in websocket_connections:
+            try:
+                await websocket.send_json(message)
+            except:
+                disconnected.append(websocket)
+        
+        # Remove disconnected clients
+        for ws in disconnected:from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Dict, Optional
+from datetime import datetime
+import asyncio
+import json
+import logging
+import sys
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="MK Processor Backend")
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# In-memory storage
+jobs_db = []  # List to store jobs
+websocket_connections = []
+
+# Try to import scraper
+SCRAPER_AVAILABLE = False
+try:
+    sys.path.append('/app')
+    from scraper_main import *
+    SCRAPER_AVAILABLE = True
+    logger.info("✅ Scraper imported successfully")
+except ImportError as e:
+    logger.warning(f"⚠️ Scraper not available: {e}")
+except Exception as e:
+    logger.error(f"❌ Error importing scraper: {e}")
+
+# Pydantic models
+class JobCreate(BaseModel):
+    models: List[str]
+    prefix: Optional[str] = ""
+    name: Optional[str] = "ULTRATHINK Scrape"
+    description: Optional[str] = "Automated scraping job"
+
+class JobUpdate(BaseModel):
+    status: Optional[str] = None
+    progress: Optional[int] = None
+
+class JobResponse(BaseModel):
+    id: str
+    name: str
+    models: List[str]
+    prefix: str
+    status: str
+    progress: int
+    created_at: str
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+    results: Optional[Dict] = None
+    error: Optional[str] = None
+
+# Basic health check
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "scraper_available": SCRAPER_AVAILABLE,
+        "total_jobs": len(jobs_db),
+        "active_jobs": sum(1 for job in jobs_db if job["status"] == "running"),
+        "websocket_connections": len(websocket_connections)
+    }
+
+# Jobs Management Endpoints
+@app.post("/jobs", response_model=JobResponse)
+async def create_job(job: JobCreate, background_tasks: BackgroundTasks):
+    """Create a new scraping job"""
+    job_id = f"job_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:-3]}"
+    
+    job_data = {
+        "id": job_id,
+        "name": job.name,
+        "models": job.models,
+        "prefix": job.prefix,
+        "status": "pending",
+        "progress": 0,
+        "created_at": datetime.now().isoformat(),
+        "started_at": None,
+        "completed_at": None,
+        "results": None,
+        "error": None
+    }
+    
+    jobs_db.append(job_data)
+    logger.info(f"📝 Created job {job_id} with {len(job.models)} models")
+    
+    # Start scraping in background
+    background_tasks.add_task(run_scraper_job, job_id, job.models, job.prefix)
+    
+    # Notify WebSocket clients
+    await notify_websocket_clients({"type": "job_created", "job": job_data})
+    
+    return job_data
+
+@app.get("/jobs")
+async def get_jobs():
+    """Get all scraping jobs"""
+    return jobs_db
+
+@app.get("/jobs/{job_id}")
+async def get_job(job_id: str):
+    """Get specific job by ID"""
+    for job in jobs_db:
+        if job["id"] == job_id:
+            return job
+    raise HTTPException(status_code=404, detail="Job not found")
+
+@app.patch("/jobs/{job_id}")
+async def update_job(job_id: str, job_update: JobUpdate):
+    """Update job status or progress"""
+    for job in jobs_db:
+        if job["id"] == job_id:
+            if job_update.status:
+                job["status"] = job_update.status
+            if job_update.progress is not None:
+                job["progress"] = job_update.progress
+            
+            await notify_websocket_clients({"type": "job_updated", "job": job})
+            return job
+    
+    raise HTTPException(status_code=404, detail="Job not found")
+
+@app.delete("/jobs/{job_id}")
+async def delete_job(job_id: str):
+    """Delete a job"""
+    for i, job in enumerate(jobs_db):
+        if job["id"] == job_id:
+            deleted_job = jobs_db.pop(i)
+            await notify_websocket_clients({"type": "job_deleted", "job_id": job_id})
+            return {"message": f"Job {job_id} deleted successfully"}
+    
+    raise HTTPException(status_code=404, detail="Job not found")
+
+@app.get("/jobs/{job_id}/logs")
+async def get_job_logs(job_id: str):
+    """Get job execution logs"""
+    return {"job_id": job_id, "logs": ["Job started", "Processing models...", "Job completed"]}
+
+@app.get("/progress")
+async def get_overall_progress():
+    """Get overall system progress"""
+    total_jobs = len(jobs_db)
+    completed_jobs = sum(1 for job in jobs_db if job["status"] == "completed")
+    running_jobs = sum(1 for job in jobs_db if job["status"] == "running")
+    failed_jobs = sum(1 for job in jobs_db if job["status"] == "failed")
+    
+    return {
+        "total_jobs": total_jobs,
+        "completed_jobs": completed_jobs,
+        "running_jobs": running_jobs,
+        "failed_jobs": failed_jobs,
+        "success_rate": (completed_jobs / total_jobs * 100) if total_jobs > 0 else 0,
+        "scraper_available": SCRAPER_AVAILABLE
+    }
+
+# WebSocket endpoint for real-time updates
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    websocket_connections.append(websocket)
+    logger.info(f"🔌 WebSocket connected. Total connections: {len(websocket_connections)}")
+    
+    try:
+        # Send initial data
+        await websocket.send_json({
+            "type": "connected",
+            "data": {
+                "jobs": len(jobs_db),
+                "active": sum(1 for j in jobs_db if j["status"] == "running")
+            }
+        })
+        
+        # Keep connection alive and send periodic updates
+        while True:
+            data = {
+                "type": "heartbeat",
+                "timestamp": datetime.now().isoformat(),
+                "jobs": len(jobs_db),
+                "active": sum(1 for j in jobs_db if j["status"] == "running"),
+                "completed": sum(1 for j in jobs_db if j["status"] == "completed")
+            }
+            await websocket.send_json(data)
+            await asyncio.sleep(10)  # Send heartbeat every 10 seconds
+            
+    except WebSocketDisconnect:
+        if websocket in websocket_connections:
+            websocket_connections.remove(websocket)
+        logger.info(f"🔌 WebSocket disconnected. Total connections: {len(websocket_connections)}")
+
+# Background task to run scraping jobs
+async def run_scraper_job(job_id: str, models: List[str], prefix: str):
+    """Execute the actual scraping job"""
+    logger.info(f"🚀 Starting scraper job {job_id}")
+    
+    # Update job status to running
+    for job in jobs_db:
+        if job["id"] == job_id:
+            job["status"] = "running"
+            job["started_at"] = datetime.now().isoformat()
+            job["progress"] = 0
+            break
+    
+    await notify_websocket_clients({"type": "job_started", "job_id": job_id})
+    
+    try:
+        results = []
+        errors = []
+        
+        if SCRAPER_AVAILABLE:
+            logger.info("🔍 Using actual scraper")
+        else:
+            logger.warning("⚠️ Using simulated scraping (actual scraper not available)")
+        
+        # Process each model
+        for i, model in enumerate(models):
+            try:
+                logger.info(f"🔍 Processing model {i+1}/{len(models)}: {model}")
+                
+                # Add prefix if provided
+                full_model_name = f"{prefix}{model}" if prefix else model
+                
+                # Simulate scraping (replace with actual scraper call when available)
+                await asyncio.sleep(2)  # Simulate scraping time
+                
+                # Simulate successful result
+                model_result = {
+                    "model": model,
+                    "full_name": full_model_name,
+                    "status": "success" if SCRAPER_AVAILABLE else "simulated",
+                    "data": {
+                        "title": f"Data for {full_model_name}",
+                        "description": f"Scraped content for model {model}",
+                        "images_found": 5,
+                        "metadata": {
+                            "scraped_at": datetime.now().isoformat(),
+                            "source": "scraper_service",
+                            "model_id": model
+                        }
+                    },
+                    "timestamp": datetime.now().isoformat()
+                }
+                
+                results.append(model_result)
+                
+                # Update progress
+                progress = int((i + 1) / len(models) * 100)
+                for job in jobs_db:
+                    if job["id"] == job_id:
+                        job["progress"] = progress
+                        break
+                
+                await notify_websocket_clients({
+                    "type": "job_progress", 
+                    "job_id": job_id, 
+                    "progress": progress,
+                    "current_model": model
+                })
+                
+                logger.info(f"✅ Completed {model} - Progress: {progress}%")
+                
+            except Exception as e:
+                error_msg = f"Error processing {model}: {str(e)}"
+                logger.error(f"❌ {error_msg}")
+                
+                errors.append({
+                    "model": model,
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat()
+                })
+        
+        # Mark job as completed
+        final_results = {
+            "successful": len(results),
+            "failed": len(errors),
+            "results": results,
+            "errors": errors,
+            "summary": f"Processed {len(models)} models, {len(results)} successful, {len(errors)} failed"
+        }
+        
+        for job in jobs_db:
+            if job["id"] == job_id:
+                job["status"] = "completed"
+                job["progress"] = 100
+                job["completed_at"] = datetime.now().isoformat()
+                job["results"] = final_results
+                break
+        
+        await notify_websocket_clients({"type": "job_completed", "job_id": job_id})
+        logger.info(f"✅ Job {job_id} completed successfully")
+        
+    except Exception as e:
+        logger.error(f"❌ Job {job_id} failed: {e}")
+        
+        # Mark job as failed
+        for job in jobs_db:
+            if job["id"] == job_id:
+                job["status"] = "failed"
+                job["error"] = str(e)
+                job["completed_at"] = datetime.now().isoformat()
+                break
+        
+        await notify_websocket_clients({"type": "job_failed", "job_id": job_id, "error": str(e)})
+
+# Helper function to notify WebSocket clients
+async def notify_websocket_clients(message: Dict):
+    """Send message to all connected WebSocket clients"""
+    if websocket_connections:
+        disconnected = []
+        for websocket in websocket_connections:
+            try:
+                await websocket.send_json(message)
+            except:
+                disconnected.append(websocket)
+        
+        # Remove disconnected clients
+        for ws in disconnected:
+            if ws in websocket_connections:
+                websocket_connections.remove(ws)
+
+# Root endpoint
+@app.get("/")
+async def root():
+    return {"message": "MK Processor Backend API", "status": "running", "timestamp": datetime.now().isoformat()}
+            if ws in websocket_connections:
+                websocket_connections.remove(ws)
+
+# Health check with scraper status
+@app.get("/health")
+async def health_check():
+    """Enhanced health check including scraper status"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "scraper_available": SCRAPER_AVAILABLE,
+        "total_jobs": len(jobs_db),
+        "active_jobs": sum(1 for job in jobs_db if job["status"] == "running"),
+        "websocket_connections": len(websocket_connections)
+    }

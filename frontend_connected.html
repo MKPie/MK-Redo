@@ -1,0 +1,420 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MK Processor - Connected Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+        }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+        .status-card h3 { color: #a78bfa; margin-bottom: 15px; }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #334155;
+        }
+        .metric:last-child { border-bottom: none; }
+        .metric-value { color: #10b981; font-weight: bold; }
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #374151;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.5s ease;
+            border-radius: 15px;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover { background: #2563eb; }
+        .error { color: #ef4444; }
+        .success { color: #10b981; }
+        .warning { color: #f59e0b; }
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .project-card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+        .project-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .status-completed { background: #10b981; }
+        .status-in-progress { background: #f59e0b; }
+        .status-not-started { background: #ef4444; }
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚁 MK Processor - Live Dashboard</h1>
+            <p>Real-time connected to Backend API <span class="live-indicator"></span></p>
+            <div id="connectionStatus" class="success">✅ Connected to Backend</div>
+        </div>
+
+        <div class="status-grid">
+            <!-- Overall Progress Card -->
+            <div class="status-card">
+                <h3>📊 Overall Progress</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="overallProgressBar" style="width: 0%"></div>
+                </div>
+                <div class="metric">
+                    <span>Progress:</span>
+                    <span class="metric-value" id="overallProgress">0%</span>
+                </div>
+                <div class="metric">
+                    <span>Tasks Completed:</span>
+                    <span class="metric-value" id="tasksCompleted">0/0</span>
+                </div>
+                <div class="metric">
+                    <span>Last Updated:</span>
+                    <span class="metric-value" id="lastUpdated">Never</span>
+                </div>
+            </div>
+
+            <!-- Backend Status Card -->
+            <div class="status-card">
+                <h3>⚙️ System Status</h3>
+                <div class="metric">
+                    <span>Backend API:</span>
+                    <span class="metric-value" id="backendStatus">Checking...</span>
+                </div>
+                <div class="metric">
+                    <span>Scraper Service:</span>
+                    <span class="metric-value" id="scraperStatus">Checking...</span>
+                </div>
+                <div class="metric">
+                    <span>Total Jobs:</span>
+                    <span class="metric-value" id="totalJobs">0</span>
+                </div>
+                <div class="metric">
+                    <span>Active Jobs:</span>
+                    <span class="metric-value" id="activeJobs">0</span>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="status-card">
+                <h3>🚀 Quick Actions</h3>
+                <button class="btn" onclick="refreshData()">🔄 Refresh Data</button>
+                <button class="btn" onclick="openAPI()">📚 API Docs</button>
+                <button class="btn" onclick="createTestJob()">🧪 Test Job</button>
+                <button class="btn" onclick="viewJobs()">📋 View Jobs</button>
+            </div>
+        </div>
+
+        <!-- Project Progress Grid -->
+        <div class="project-grid" id="projectGrid">
+            <div class="status-card">
+                <h3>📋 Loading Projects...</h3>
+                <p>Fetching project data from backend...</p>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        <div class="status-card" style="margin-top: 20px;">
+            <h3>📝 Activity Log</h3>
+            <div id="activityLog" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.9rem;">
+                <div>Initializing dashboard...</div>
+            </div>
+            <button class="btn" onclick="clearLog()">🗑️ Clear Log</button>
+        </div>
+    </div>
+
+    <script>
+        // Backend API Configuration
+        const BACKEND_URL = 'http://localhost:8000';
+        let isConnected = false;
+
+        // Initialize dashboard
+        async function initDashboard() {
+            log('🚀 Initializing MK Processor Dashboard...');
+            await checkBackendConnection();
+            if (isConnected) {
+                await loadAllData();
+                startAutoRefresh();
+            }
+        }
+
+        // Check backend connection
+        async function checkBackendConnection() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`, { 
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    const health = await response.json();
+                    isConnected = true;
+                    document.getElementById('connectionStatus').innerHTML = '✅ Connected to Backend';
+                    document.getElementById('connectionStatus').className = 'success';
+                    
+                    // Update backend status
+                    document.getElementById('backendStatus').innerHTML = '✅ Healthy';
+                    document.getElementById('scraperStatus').innerHTML = health.scraper_available ? '✅ Available' : '❌ Not Available';
+                    document.getElementById('totalJobs').innerHTML = health.total_jobs || 0;
+                    document.getElementById('activeJobs').innerHTML = health.active_jobs || 0;
+                    
+                    log('✅ Backend connection established');
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                isConnected = false;
+                document.getElementById('connectionStatus').innerHTML = '❌ Backend Disconnected';
+                document.getElementById('connectionStatus').className = 'error';
+                document.getElementById('backendStatus').innerHTML = '❌ Offline';
+                log(`❌ Backend connection failed: ${error.message}`);
+                return false;
+            }
+        }
+
+        // Load all dashboard data
+        async function loadAllData() {
+            await Promise.all([
+                loadProgress(),
+                loadProjects()
+            ]);
+        }
+
+        // Load progress from backend
+        async function loadProgress() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/progress`);
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update overall progress
+                    document.getElementById('overallProgress').innerHTML = `${data.overall_progress}%`;
+                    document.getElementById('overallProgressBar').style.width = `${data.overall_progress}%`;
+                    document.getElementById('tasksCompleted').innerHTML = `${data.completed_tasks}/${data.total_tasks}`;
+                    document.getElementById('lastUpdated').innerHTML = new Date(data.last_updated).toLocaleTimeString();
+                    
+                    log(`📊 Progress loaded: ${data.overall_progress}% (${data.completed_tasks}/${data.total_tasks})`);
+                    return data;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Failed to load progress: ${error.message}`);
+                return null;
+            }
+        }
+
+        // Load project details
+        async function loadProjects() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/progress`);
+                if (response.ok) {
+                    const data = await response.json();
+                    displayProjects(data.projects);
+                    log(`📋 Projects loaded: ${Object.keys(data.projects).length} projects`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Failed to load projects: ${error.message}`);
+                document.getElementById('projectGrid').innerHTML = `
+                    <div class="status-card">
+                        <h3 class="error">❌ Failed to Load Projects</h3>
+                        <p>Cannot connect to backend API</p>
+                        <button class="btn" onclick="refreshData()">🔄 Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Display projects in grid
+        function displayProjects(projects) {
+            const grid = document.getElementById('projectGrid');
+            grid.innerHTML = '';
+
+            Object.entries(projects).forEach(([projectId, project]) => {
+                const percentage = Math.round((project.completed / project.total) * 100);
+                const statusClass = `status-${project.status}`;
+                
+                const projectCard = document.createElement('div');
+                projectCard.className = 'project-card';
+                projectCard.innerHTML = `
+                    <h3>${projectId.charAt(0).toUpperCase() + projectId.slice(1)}</h3>
+                    <div class="project-status ${statusClass}">${project.status.replace('-', ' ').toUpperCase()}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percentage}%"></div>
+                    </div>
+                    <div class="metric">
+                        <span>Progress:</span>
+                        <span class="metric-value">${percentage}%</span>
+                    </div>
+                    <div class="metric">
+                        <span>Tasks:</span>
+                        <span class="metric-value">${project.completed}/${project.total}</span>
+                    </div>
+                    <button class="btn" onclick="updateProject('${projectId}', ${project.completed + 1})">
+                        ➕ Complete Task
+                    </button>
+                `;
+                grid.appendChild(projectCard);
+            });
+        }
+
+        // Quick action functions
+        async function refreshData() {
+            log('🔄 Refreshing dashboard data...');
+            await checkBackendConnection();
+            if (isConnected) {
+                await loadAllData();
+                log('✅ Dashboard refreshed');
+            }
+        }
+
+        function openAPI() {
+            window.open(`${BACKEND_URL}/docs`, '_blank');
+            log('📚 Opened API documentation');
+        }
+
+        async function createTestJob() {
+            try {
+                const testJob = {
+                    models: ["dashboard-test-" + Date.now()],
+                    prefix: "DASH-",
+                    name: "Dashboard Test Job"
+                };
+
+                const response = await fetch(`${BACKEND_URL}/jobs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testJob)
+                });
+
+                if (response.ok) {
+                    const job = await response.json();
+                    log(`✅ Test job created: ${job.id}`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Failed to create test job: ${error.message}`);
+            }
+        }
+
+        function viewJobs() {
+            window.open(`${BACKEND_URL}/jobs`, '_blank');
+            log('📋 Opened jobs API');
+        }
+
+        async function updateProject(projectId, newCompleted) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/progress/${projectId}/update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed: newCompleted })
+                });
+
+                if (response.ok) {
+                    log(`✅ Updated ${projectId} progress`);
+                    await loadAllData();
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Failed to update ${projectId}: ${error.message}`);
+            }
+        }
+
+        // Auto-refresh every 30 seconds
+        function startAutoRefresh() {
+            setInterval(async () => {
+                if (isConnected) {
+                    await loadAllData();
+                } else {
+                    await checkBackendConnection();
+                }
+            }, 30000);
+        }
+
+        // Logging function
+        function log(message) {
+            const logElement = document.getElementById('activityLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logElement.insertBefore(logEntry, logElement.firstChild);
+            
+            // Keep only last 20 log entries
+            while (logElement.children.length > 20) {
+                logElement.removeChild(logElement.lastChild);
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('activityLog').innerHTML = '';
+            log('🗑️ Activity log cleared');
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

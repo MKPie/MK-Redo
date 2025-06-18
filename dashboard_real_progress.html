@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>MK Processor - Real Progress Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .progress-header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .progress-bar { width: 100%; height: 30px; background: #e0e0e0; border-radius: 15px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); transition: width 0.5s ease; }
+        .project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .project-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .project-status { display: inline-block; padding: 5px 15px; border-radius: 20px; color: white; font-size: 12px; font-weight: bold; }
+        .status-completed { background: #22c55e; }
+        .status-in-progress { background: #f59e0b; }
+        .status-not-started { background: #ef4444; }
+        .refresh-btn { background: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .refresh-btn:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="progress-header">
+            <h1>🚁 MK Processor - Real Progress Dashboard</h1>
+            <div id="overallProgress">Loading...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+            </div>
+            <button class="refresh-btn" onclick="loadProgress()">🔄 Refresh Progress</button>
+            <button class="refresh-btn" onclick="openAPI()" style="margin-left: 10px;">📚 Open API</button>
+        </div>
+        
+        <div class="project-grid" id="projectGrid">
+            Loading projects...
+        </div>
+    </div>
+
+    <script>
+        async function loadProgress() {
+            try {
+                const response = await fetch('http://localhost:8000/progress');
+                const data = await response.json();
+                
+                // Update overall progress
+                document.getElementById('overallProgress').innerHTML = `
+                    <h2>${data.overall_progress}% Complete</h2>
+                    <p>${data.completed_tasks} of ${data.total_tasks} tasks completed</p>
+                    <small>Last updated: ${new Date(data.last_updated).toLocaleString()}</small>
+                `;
+                
+                // Update progress bar
+                document.getElementById('progressBar').style.width = data.overall_progress + '%';
+                
+                // Update project grid
+                const projectGrid = document.getElementById('projectGrid');
+                projectGrid.innerHTML = '';
+                
+                Object.entries(data.projects).forEach(([projectId, project]) => {
+                    const percentage = Math.round((project.completed / project.total) * 100);
+                    const statusClass = `status-${project.status}`;
+                    
+                    const projectCard = document.createElement('div');
+                    projectCard.className = 'project-card';
+                    projectCard.innerHTML = `
+                        <h3>${projectId.charAt(0).toUpperCase() + projectId.slice(1)}</h3>
+                        <div class="project-status ${statusClass}">${project.status.replace('-', ' ').toUpperCase()}</div>
+                        <div class="progress-bar" style="height: 20px; margin: 15px 0;">
+                            <div class="progress-fill" style="width: ${percentage}%"></div>
+                        </div>
+                        <p>${project.completed} / ${project.total} tasks completed (${percentage}%)</p>
+                    `;
+                    projectGrid.appendChild(projectCard);
+                });
+                
+            } catch (error) {
+                console.error('Failed to load progress:', error);
+                document.getElementById('overallProgress').innerHTML = '<p style="color: red;">Failed to load progress. Is the backend running?</p>';
+            }
+        }
+        
+        function openAPI() {
+            window.open('http://localhost:8000/docs', '_blank');
+        }
+        
+        // Load progress on page load
+        loadProgress();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadProgress, 30000);
+    </script>
+</body>
+</html>
