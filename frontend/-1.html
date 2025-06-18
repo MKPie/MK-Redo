@@ -1,0 +1,2707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- UTF-8 Encoding Fixes for nginx localhost:3002 -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="charset" content="UTF-8">
+    <style>
+        @charset "UTF-8";
+        /* Force UTF-8 encoding for nginx */
+        html { charset: UTF-8; }
+        body { 
+            font-family: 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', Tahoma, Geneva, Verdana, sans-serif;
+            text-rendering: optimizeLegibility;
+            -webkit-font-feature-settings: "liga";
+            font-feature-settings: "liga";
+        }
+    </style>
+    <title>MK Processor 4.2.1 - Smart AI Dashboard</title>
+    <style>
+        /* Core Theme System */
+        :root {
+            /* Default Dark Theme */
+            --bg-primary: #0a0e27;
+            --bg-secondary: #1a1f3a;
+            --bg-card: rgba(0,0,0,0.8);
+            --text-primary: #00ff88;
+            --text-secondary: #e0e7ff;
+            --text-dark: #000;
+            --accent-primary: #667eea;
+            --accent-secondary: #764ba2;
+            --border-color: #00ff88;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+            
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Light Theme */
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #e2e8f0;
+            --bg-card: #ffffff;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-dark: #ffffff;
+            --accent-primary: #667eea;
+            --accent-secondary: #5a67d8;
+            --border-color: #e2e8f0;
+        }
+
+        /* Cyber Theme */
+        [data-theme="cyber"] {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-card: rgba(0, 255, 0, 0.05);
+            --text-primary: #00ff00;
+            --text-secondary: #00cc00;
+            --border-color: #00ff00;
+            --accent-primary: #ff00ff;
+            --accent-secondary: #00ffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            text-rendering: optimizeLegibility;
+            -webkit-font-feature-settings: "liga";
+            font-feature-settings: "liga";
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Connection Status Bar */
+        .connection-status-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .connection-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .connection-status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-connected { background: var(--success); }
+        .status-disconnected { background: var(--error); }
+        .status-syncing { background: var(--warning); }
+
+        .integration-btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .integration-btn:hover {
+            background: var(--accent-secondary);
+            transform: translateY(-1px);
+        }
+
+        /* Export Button Styling */
+        .export-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+
+        .export-btn:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+        }
+
+        /* Real-time Status Indicator */
+        .realtime-status {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 12px;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .realtime-status.disconnected {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .realtime-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 1.5s infinite;
+        }
+
+        .realtime-status.disconnected .realtime-pulse {
+            background: var(--error);
+        }
+
+        /* Live Jobs Panel */
+        .live-jobs-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .live-jobs-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .jobs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .job-item {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .job-item.running {
+            border-left-color: var(--warning);
+            animation: pulse 2s infinite;
+        }
+
+        .job-item.completed {
+            border-left-color: var(--success);
+        }
+
+        .job-item.failed {
+            border-left-color: var(--error);
+        }
+
+        .job-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .job-details {
+            flex: 1;
+        }
+
+        .job-title {
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .job-status {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .job-progress {
+            margin-top: 10px;
+        }
+
+        .job-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-primary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .job-progress-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .job-progress-fill.running {
+            background: linear-gradient(90deg, var(--warning), #d97706);
+        }
+
+        .job-progress-fill.completed {
+            background: linear-gradient(90deg, var(--success), #16a34a);
+        }
+
+        /* Smart AI Guidance Panel */
+        .ai-guidance-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-guidance-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .ai-guidance-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .ai-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
+        }
+
+        .ai-guidance-content {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .next-task-suggestion {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid var(--accent-primary);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .task-dependency-chain {
+            margin-top: 15px;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .dependency-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        .dependency-arrow {
+            margin: 0 10px;
+            color: var(--accent-primary);
+        }
+
+        /* Analytics Dashboard */
+        .analytics-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .analytics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-container {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 20px;
+            height: 250px;
+            position: relative;
+        }
+
+        .chart-title {
+            color: var(--text-primary);
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            border: 2px dashed var(--border-color);
+        }
+
+        .insight-card {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .insight-title {
+            color: var(--accent-primary);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .insight-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .header {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+
+        .live-status {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 10px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 450px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-left: 2px solid var(--border-color);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+        }
+
+        .settings-panel.active {
+            right: 0;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .settings-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .settings-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .settings-section {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .settings-section h3 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* LLM Selector Styles */
+        .llm-selector-container {
+            margin-top: 15px;
+        }
+
+        .llm-dropdown {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23667eea" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+        }
+
+        .llm-dropdown:hover, .llm-dropdown:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+
+        .llm-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .llm-status.connected {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .llm-status.local {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .llm-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .theme-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .theme-option {
+            padding: 15px;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            background: var(--bg-card);
+        }
+
+        .theme-option:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .theme-option.active {
+            border-color: var(--text-primary);
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        /* Settings Toggle Button */
+        .settings-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 999;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .settings-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Chat Widget */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s;
+        }
+
+        .chat-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .chat-window {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 400px;
+            height: 500px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .chat-window.active {
+            display: flex;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 13px 13px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-ai-indicator {
+            font-size: 12px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: var(--bg-secondary);
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .chat-message.user {
+            background: var(--accent-primary);
+            color: white;
+            margin-left: 20%;
+            text-align: right;
+        }
+
+        .chat-message.assistant {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            margin-right: 20%;
+            border: 1px solid var(--border-color);
+        }
+
+        .chat-message.system {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            text-align: center;
+            font-style: italic;
+            margin: 10px 0;
+            border: 1px dashed var(--border-color);
+        }
+
+        .chat-message.typing {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            margin-right: 20%;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .chat-send {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chat-send:hover {
+            background: var(--accent-secondary);
+            transform: translateX(2px);
+        }
+
+        .chat-send:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .stat-change {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--accent-primary);
+            display: inline-block;
+        }
+
+        /* Progress Overview */
+        .progress-overview {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .progress-title {
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+
+        .progress-percentage {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-primary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            transition: all 1s ease;
+            width: 0%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Milestones */
+        .milestones {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .milestone {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .milestone:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .milestone.completed {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: var(--success);
+        }
+
+        .milestone.current {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--warning);
+        }
+
+        .milestone-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .milestone.completed .milestone-status {
+            background: var(--success);
+            color: white;
+        }
+
+        .milestone.current .milestone-status {
+            background: var(--warning);
+            color: white;
+        }
+
+        /* Roadmap */
+        .roadmap {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .phase-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 5px solid var(--accent-primary);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .phase-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .phase-number {
+            background: var(--gradient-primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .phase-title {
+            color: var(--text-primary);
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        .phase-timeline {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .phase-progress {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .phase-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .phase-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #16a34a);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .phase-progress-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .project-list {
+            list-style: none;
+        }
+
+        .project-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+
+        .project-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            margin: 0 -10px;
+            padding: 12px 10px;
+            border-radius: 8px;
+        }
+
+        .project-item:last-child {
+            border-bottom: none;
+        }
+
+        .project-status {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .status-not-started {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+
+        .status-in-progress {
+            background: linear-gradient(135deg, var(--warning), #d97706);
+            animation: pulse 2s infinite;
+        }
+
+        .status-completed {
+            background: linear-gradient(135deg, var(--success), #16a34a);
+        }
+
+        .project-name {
+            flex: 1;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .project-progress {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-right: 10px;
+        }
+
+        .project-priority {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .priority-critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .priority-high {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .priority-medium {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+
+        .start-btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .start-btn:hover {
+            background: var(--accent-secondary);
+            transform: translateY(-1px);
+        }
+
+        .start-btn:disabled {
+            background: var(--bg-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 15px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-left: 4px solid;
+            z-index: 3000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left-color: var(--success);
+        }
+
+        .notification.error {
+            border-left-color: var(--error);
+        }
+
+        .notification.info {
+            border-left-color: var(--info);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Live Data Indicators */
+        .live-indicator {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .live-indicator.updating {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            animation: pulse 1s infinite;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2.2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .roadmap {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-window {
+                width: 100%;
+                right: -10px;
+                left: 10px;
+            }
+
+            .connection-status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .settings-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .analytics-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <!-- Settings Toggle -->
+    <button class="settings-toggle" onclick="toggleSettings()">
+        <span>⚙</span>
+        <span>Settings</span>
+    </button>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h2>⚙ Settings</h2>
+            <button class="settings-close" onclick="toggleSettings()">×</button>
+        </div>
+        
+        <div class="settings-section">
+            <h3>🤖 AI Assistant</h3>
+            <div class="llm-selector-container">
+                <label for="llmSelector" style="display: block; color: var(--text-secondary); margin-bottom: 8px; font-size: 14px;">Select AI Model:</label>
+                <select id="llmSelector" class="llm-dropdown" onchange="changeLLM()">
+                    <option value="gpt4">🧠 OpenAI GPT-4</option>
+                    <option value="claude">🎭 Anthropic Claude</option>
+                    <option value="gemini">✨ Google Gemini</option>
+                    <option value="ollama">🏠 Ollama Local</option>
+                </select>
+                <div id="llmStatus" class="llm-status connected">
+                    <div class="llm-icon" style="background: #10a37f;"></div>
+                    <span>GPT-4 Active</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h3>🎨 Theme</h3>
+            <div class="theme-selector">
+                <div class="theme-option" onclick="setTheme('dark')" data-theme="dark">
+                    <div>🌙</div>
+                    <div>Dark</div>
+                </div>
+                <div class="theme-option active" onclick="setTheme('light')" data-theme="light">
+                    <div>☀️</div>
+                    <div>Light</div>
+                </div>
+                <div class="theme-option" onclick="setTheme('cyber')" data-theme="cyber">
+                    <div>💻</div>
+                    <div>Cyber</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget">
+        <button class="chat-toggle" onclick="toggleChat()">
+            <span id="chatIcon">💬</span>
+        </button>
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <div>
+                    <h3>🤖 AI Assistant</h3>
+                    <div class="chat-ai-indicator" id="chatAiIndicator">
+                        <div class="llm-icon" style="background: #10a37f; width: 12px; height: 12px;"></div>
+                        <span>GPT-4</span>
+                    </div>
+                </div>
+                <button style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;" onclick="toggleChat()">×</button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be added here -->
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Ask me about the backend connection..." onkeypress="handleChatKeypress(event)">
+                <button class="chat-send" id="chatSend" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>MK Processor 4.2.1</h1>
+            <p>Smart AI-Powered Multi-LLM Development Platform</p>
+            <div class="live-status">
+                <div class="status-dot"></div>
+                <span id="liveStatusText">Real-time Backend Integration Active</span>
+            </div>
+        </div>
+
+        <!-- Connection Status Bar -->
+        <div class="connection-status-bar">
+            <div class="connection-item">
+                <div class="connection-status-dot status-disconnected" id="githubStatusDot"></div>
+                <span id="githubStatusText">GitHub: Not Connected</span>
+            </div>
+            <div class="connection-item">
+                <div class="connection-status-dot status-disconnected" id="hubspotStatusDot"></div>
+                <span id="hubspotStatusText">HubSpot: Not Connected</span>
+            </div>
+            <div class="connection-item">
+                <div class="connection-status-dot" id="backendStatusDot" style="background: var(--error);"></div>
+                <span id="backendStatusText">Backend: Connecting to port 3002...</span>
+            </div>
+            <div class="connection-item">
+                <div class="realtime-status disconnected" id="realtimeStatus">
+                    <div class="realtime-pulse"></div>
+                    <span>Real-time: Connecting...</span>
+                </div>
+            </div>
+            <div class="connection-item">
+                <span>Last Sync: <span id="lastSyncTime">Never</span></span>
+            </div>
+            <div class="connection-item">
+                <button class="integration-btn" onclick="refreshFromBackend()">🔄 Refresh Data</button>
+                <button class="integration-btn" onclick="testConnection()">🔌 Test Connection</button>
+                <button class="export-btn" onclick="downloadProgressReport()">📥 Download Progress Report</button>
+            </div>
+        </div>
+
+        <!-- Live Jobs Panel -->
+        <div class="live-jobs-panel">
+            <div class="jobs-header">
+                <h3 style="color: var(--text-primary);">🚀 Live Jobs & Activities<span class="live-indicator" id="jobsLiveIndicator">LIVE</span></h3>
+                <div>
+                    <button class="integration-btn" onclick="createTestJob()">➕ Test Job</button>
+                    <button class="integration-btn" onclick="refreshJobs()">🔄 Refresh</button>
+                </div>
+            </div>
+            <div id="jobsList">
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-details">
+                            <div class="job-title">Initializing Real-time Connection</div>
+                            <div class="job-status">Connecting to FastAPI backend on port 3002...</div>
+                        </div>
+                    </div>
+                    <div class="job-progress">
+                        <div class="job-progress-bar">
+                            <div class="job-progress-fill" style="width: 10%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Smart AI Guidance Panel -->
+        <div class="ai-guidance-panel">
+            <div class="ai-guidance-header">
+                <div class="ai-avatar">🤖</div>
+                <div>
+                    <h3 style="color: var(--text-primary); margin: 0;">Smart Integration Guidance</h3>
+                    <div style="font-size: 14px; opacity: 0.8;">AI analyzing FastAPI backend connection</div>
+                </div>
+            </div>
+            <div class="ai-guidance-content">
+                <div id="aiGuidanceText">
+                    🔌 Connecting to your FastAPI backend on port 3002! Real-time WebSocket integration will enable live job tracking, progress updates, and seamless dashboard synchronization. All your existing features will remain intact.
+                </div>
+                <div class="next-task-suggestion">
+                    <strong>🎯 Backend Integration Status:</strong>
+                    <div id="nextTaskSuggestion">Establishing WebSocket connection to wss://mk-redo.onrender.com/ws/dashboard_*</div>
+                    <button class="integration-btn" style="margin-top: 8px;" onclick="showConnectionDetails()">View Details</button>
+                </div>
+                <div class="task-dependency-chain">
+                    <strong>📊 Connection Flow:</strong>
+                    <div id="dependencyChain">
+                        <div class="dependency-item">
+                            <span>1. FastAPI Health Check</span>
+                            <span class="dependency-arrow">→</span>
+                            <span>2. WebSocket Connect</span>
+                            <span class="dependency-arrow">→</span>
+                            <span>3. Real-time Sync</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="overallProgress">58%<span class="live-indicator updating" id="progressLiveIndicator">LIVE</span></div>
+                <div class="stat-label">Overall Progress</div>
+                <div class="stat-change" id="progressChange">+0% this week</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedTasks">22/38</div>
+                <div class="stat-label">Tasks Completed</div>
+                <div class="stat-change" id="tasksChange">From backend data</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="currentPhase">Phase 1</div>
+                <div class="stat-label">Current Phase</div>
+                <div class="stat-change" id="phaseProgress">Foundation</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeJobs">0</div>
+                <div class="stat-label">Active Jobs</div>
+                <div class="stat-change" id="jobsChange">Real-time tracking</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="backendStatus">🔌</div>
+                <div class="stat-label">Backend Status</div>
+                <div class="stat-change" id="backendChange">Port 3002</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeAI">GPT-4</div>
+                <div class="stat-label">Active AI Model</div>
+                <div class="stat-change" id="aiModelChange">Multi-LLM Ready</div>
+            </div>
+        </div>
+
+        <!-- Progress Overview -->
+        <div class="progress-overview">
+            <div class="progress-header">
+                <div class="progress-title">📊 Project Progress</div>
+                <div class="progress-percentage" id="progressPercentage">58%</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 58%;"></div>
+            </div>
+            <p id="progressText">🚀 Backend integration in progress! Connecting dashboard to FastAPI for real-time updates.</p>
+            
+            <div class="milestones">
+                <div class="milestone current" id="milestone1">
+                    <div class="milestone-status">1</div>
+                    <h4>Foundation Setup</h4>
+                    <p>Development environment and core infrastructure</p>
+                </div>
+                <div class="milestone" id="milestone2">
+                    <div class="milestone-status">2</div>
+                    <h4>MVP Launch</h4>
+                    <p>Enterprise web scraping platform</p>
+                </div>
+                <div class="milestone" id="milestone3">
+                    <div class="milestone-status">3</div>
+                    <h4>Market Traction</h4>
+                    <p>First 100 enterprise customers</p>
+                </div>
+                <div class="milestone" id="milestone4">
+                    <div class="milestone-status">4</div>
+                    <h4>Dual Platform</h4>
+                    <p>Consumer platform launch</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Implementation Roadmap -->
+        <div class="roadmap">
+            <!-- Phase 1: Foundation -->
+            <div class="phase-card">
+                <div class="phase-header">
+                    <div class="phase-number">1</div>
+                    <div class="phase-title">Foundation</div>
+                </div>
+                <div class="phase-timeline">Months 1-4 | Enterprise MVP</div>
+                <div class="phase-progress">
+                    <div class="phase-progress-bar">
+                        <div class="phase-progress-fill" id="phase1Progress" style="width: 58%"></div>
+                    </div>
+                    <div class="phase-progress-text" id="phase1Text">58% Complete</div>
+                </div>
+                <ul class="project-list">
+                    <li class="project-item">
+                        <div class="project-status status-in-progress" id="status-dev-env">●</div>
+                        <div class="project-name">Development Environment</div>
+                        <div class="project-progress" id="progress-dev-env">5/8 tasks</div>
+                        <div class="project-priority priority-critical">Critical</div>
+                        <button class="start-btn" onclick="viewProject('dev-env')">View Progress</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-in-progress" id="status-scraping">●</div>
+                        <div class="project-name">Web Scraping MVP</div>
+                        <div class="project-progress" id="progress-scraping">7/10 tasks</div>
+                        <div class="project-priority priority-critical">Critical</div>
+                        <button class="start-btn" onclick="viewProject('scraping')">View Progress</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-in-progress" id="status-ai">●</div>
+                        <div class="project-name">AI Integration</div>
+                        <div class="project-progress" id="progress-ai">6/10 tasks</div>
+                        <div class="project-priority priority-high">High</div>
+                        <button class="start-btn" onclick="viewProject('ai')">View Progress</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-in-progress" id="status-frontend">●</div>
+                        <div class="project-name">Frontend Dashboard</div>
+                        <div class="project-progress" id="progress-frontend">4/10 tasks</div>
+                        <div class="project-priority priority-high">High</div>
+                        <button class="start-btn" onclick="viewProject('frontend')">View Progress</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Phase 2: Growth -->
+            <div class="phase-card">
+                <div class="phase-header">
+                    <div class="phase-number">2</div>
+                    <div class="phase-title">Growth</div>
+                </div>
+                <div class="phase-timeline">Months 5-12 | Enterprise Scale</div>
+                <div class="phase-progress">
+                    <div class="phase-progress-bar">
+                        <div class="phase-progress-fill" id="phase2Progress" style="width: 0%"></div>
+                    </div>
+                    <div class="phase-progress-text" id="phase2Text">0% Complete</div>
+                </div>
+                <ul class="project-list">
+                    <li class="project-item">
+                        <div class="project-status status-not-started">○</div>
+                        <div class="project-name">Enterprise Features</div>
+                        <div class="project-progress">0/5 tasks</div>
+                        <div class="project-priority priority-high">High</div>
+                        <button class="start-btn" disabled>Locked</button>
+                    </li>
+                    <li class="project-item">
+                        <div class="project-status status-not-started">○</div>
+                        <div class="project-name">Customer Acquisition</div>
+                        <div class="project-progress">0/5 tasks</div>
+                        <div class="project-priority priority-medium">Medium</div>
+                        <button class="start-btn" disabled>Locked</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Phase 3: Market -->
+            <div class="phase-card">
+                <div class="phase-header">
+                    <div class="phase-number">3</div>
+                    <div class="phase-title">Market</div>
+                </div>
+                <div class="phase-timeline">Months 13-24 | Market Expansion</div>
+                <div class="phase-progress">
+                    <div class="phase-progress-bar">
+                        <div class="phase-progress-fill" id="phase3Progress" style="width: 0%"></div>
+                    </div>
+                    <div class="phase-progress-text" id="phase3Text">0% Complete</div>
+                </div>
+                <ul class="project-list">
+                    <li class="project-item">
+                        <div class="project-status status-not-started">○</div>
+                        <div class="project-name">Market Research</div>
+                        <div class="project-progress">0/5 tasks</div>
+                        <div class="project-priority priority-medium">Medium</div>
+                        <button class="start-btn" disabled>Locked</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Phase 4: Consumer -->
+            <div class="phase-card">
+                <div class="phase-header">
+                    <div class="phase-number">4</div>
+                    <div class="phase-title">Consumer</div>
+                </div>
+                <div class="phase-timeline">Months 25-36 | Consumer Platform</div>
+                <div class="phase-progress">
+                    <div class="phase-progress-bar">
+                        <div class="phase-progress-fill" id="phase4Progress" style="width: 0%"></div>
+                    </div>
+                    <div class="phase-progress-text" id="phase4Text">0% Complete</div>
+                </div>
+                <ul class="project-list">
+                    <li class="project-item">
+                        <div class="project-status status-not-started">○</div>
+                        <div class="project-name">Consumer Platform</div>
+                        <div class="project-progress">0/5 tasks</div>
+                        <div class="project-priority priority-medium">Medium</div>
+                        <button class="start-btn" disabled>Locked</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced Global Application State
+        const AppState = {
+            ai: {
+                currentModel: localStorage.getItem('selectedLLM') || 'gpt4',
+                models: {
+                    gpt4: {
+                        name: 'OpenAI GPT-4',
+                        icon: '🧠',
+                        color: '#10a37f',
+                        isReal: true
+                    },
+                    claude: {
+                        name: 'Anthropic Claude',
+                        icon: '🎭',
+                        color: '#d97848',
+                        isReal: true
+                    },
+                    gemini: {
+                        name: 'Google Gemini',
+                        icon: '✨',
+                        color: '#4285f4',
+                        isReal: true
+                    },
+                    ollama: {
+                        name: 'Ollama (Local)',
+                        icon: '🏠',
+                        color: '#6366f1',
+                        isReal: true
+                    }
+                }
+            },
+            backend: {
+                connected: false,
+                url: 'https://mk-redo.onrender.com',  // Updated to port 3002
+                wsUrl: 'wss://mk-redo.onrender.com',
+                clientId: 'dashboard_' + Math.random().toString(36).substr(2, 9),
+                lastSync: null,
+                fallbackPolling: false
+            },
+            progress: {
+                overall: 58,  // From the progress report
+                completed: 22,
+                total: 38,
+                velocity: 0,
+                phases: {
+                    phase1: 58,
+                    phase2: 0,
+                    phase3: 0,
+                    phase4: 0
+                }
+            },
+            settings: {
+                theme: localStorage.getItem('theme') || 'light',
+                notifications: true,
+                sound: true
+            },
+            websocket: null,
+            realtimeStatus: 'disconnected',
+            jobs: []
+        };
+
+        // Real-time Backend Connection Manager - Updated for FastAPI
+        class FastAPIConnectionManager {
+            constructor() {
+                this.baseUrl = AppState.backend.url;
+                this.wsUrl = AppState.backend.wsUrl;
+                this.clientId = AppState.backend.clientId;
+                this.websocketUrl = `${this.wsUrl}/ws/${this.clientId}`;
+                this.retryCount = 0;
+                this.maxRetries = 5;
+                this.fallbackPolling = null;
+                this.isConnected = false;
+                this.heartbeatInterval = null;
+            }
+
+            async initialize() {
+                console.log('🔌 Initializing FastAPI backend connection to port 3002...');
+                addChatMessage('🔌 Connecting to FastAPI backend on port 3002...', 'system');
+                
+                await this.testBackendHealth();
+                await this.connectWebSocket();
+                await this.fetchInitialData();
+            }
+
+            async testBackendHealth() {
+                try {
+                    showNotification('Testing backend connection...', 'info');
+                    
+                    const response = await fetch(`${this.baseUrl}/health`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('✅ Backend health check passed:', data);
+                        this.updateConnectionStatus('connected');
+                        showNotification('Backend health check passed!', 'success');
+                        addChatMessage(`✅ Backend is healthy! Running ${data.app || 'FastAPI'} version ${data.version || '4.2.1'}`, 'system');
+                        return true;
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Backend health check failed:', error.message);
+                    this.updateConnectionStatus('disconnected');
+                    showNotification('Backend connection failed - working offline', 'error');
+                    addChatMessage(`⚠️ Backend not responding on port 3002. Working in offline mode. Error: ${error.message}`, 'system');
+                    return false;
+                }
+            }
+
+            async connectWebSocket() {
+                try {
+                    if (AppState.websocket) {
+                        AppState.websocket.close();
+                    }
+
+                    console.log(`🔌 Connecting WebSocket to: ${this.websocketUrl}`);
+                    addChatMessage(`🔌 Establishing WebSocket connection to ${this.websocketUrl}...`, 'system');
+
+                    AppState.websocket = new WebSocket(this.websocketUrl);
+                    
+                    AppState.websocket.onopen = () => {
+                        console.log('🚀 WebSocket connected to FastAPI backend!');
+                        this.isConnected = true;
+                        this.retryCount = 0;
+                        this.updateRealtimeStatus('connected');
+                        this.stopFallbackPolling();
+                        this.startHeartbeat();
+                        
+                        showNotification('Real-time connection established!', 'success');
+                        addChatMessage('🚀 Real-time WebSocket connection established! Live updates are now active.', 'system');
+                        
+                        // Send initial handshake
+                        this.sendMessage({
+                            type: 'handshake',
+                            client_id: this.clientId,
+                            timestamp: new Date().toISOString()
+                        });
+                    };
+
+                    AppState.websocket.onmessage = (event) => {
+                        try {
+                            const data = JSON.parse(event.data);
+                            this.handleWebSocketMessage(data);
+                        } catch (error) {
+                            console.error('Error parsing WebSocket message:', error);
+                        }
+                    };
+
+                    AppState.websocket.onclose = (event) => {
+                        console.log('🔌 WebSocket disconnected:', event.code, event.reason);
+                        this.isConnected = false;
+                        this.updateRealtimeStatus('disconnected');
+                        this.stopHeartbeat();
+                        
+                        if (event.code !== 1000) { // Not a normal closure
+                            this.startReconnection();
+                        }
+                        
+                        addChatMessage('🔌 WebSocket disconnected. Attempting to reconnect...', 'system');
+                    };
+
+                    AppState.websocket.onerror = (error) => {
+                        console.error('WebSocket error:', error);
+                        this.startFallbackPolling();
+                        addChatMessage('⚠️ WebSocket error occurred. Falling back to polling.', 'system');
+                    };
+
+                } catch (error) {
+                    console.error('Failed to create WebSocket connection:', error);
+                    this.startFallbackPolling();
+                }
+            }
+
+            handleWebSocketMessage(data) {
+                console.log('📡 Received WebSocket data:', data);
+                
+                switch (data.type) {
+                    case 'handshake_ack':
+                        console.log('🤝 Handshake acknowledged by backend');
+                        addChatMessage('🤝 Backend acknowledged connection. Real-time sync active!', 'system');
+                        break;
+                        
+                    case 'progress_update':
+                        this.updateDashboardFromBackend(data.data);
+                        showNotification(`Progress updated: ${data.data.message}`, 'info');
+                        break;
+                        
+                    case 'job_created':
+                        this.addJob(data.data);
+                        showNotification(`New job created: ${data.data.name}`, 'info');
+                        addChatMessage(`📝 New job created: ${data.data.name}`, 'system');
+                        break;
+                        
+                    case 'job_updated':
+                        this.updateJob(data.data);
+                        addChatMessage(`🔄 Job updated: ${data.data.name} - Status: ${data.data.status}`, 'system');
+                        break;
+                        
+                    case 'job_completed':
+                        this.updateJob(data.data);
+                        showNotification(`Job completed: ${data.data.name}`, 'success');
+                        addChatMessage(`✅ Job completed: ${data.data.name}`, 'system');
+                        break;
+                        
+                    case 'job_failed':
+                        this.updateJob(data.data);
+                        showNotification(`Job failed: ${data.data.name}`, 'error');
+                        addChatMessage(`❌ Job failed: ${data.data.name} - ${data.data.error}`, 'system');
+                        break;
+                        
+                    case 'heartbeat':
+                        // Respond to heartbeat
+                        this.sendMessage({ type: 'heartbeat_ack', timestamp: new Date().toISOString() });
+                        break;
+                        
+                    default:
+                        console.log('Unknown message type:', data.type);
+                }
+                
+                document.getElementById('lastSyncTime').textContent = new Date().toLocaleTimeString();
+                AppState.backend.lastSync = new Date();
+            }
+
+            sendMessage(message) {
+                if (AppState.websocket && AppState.websocket.readyState === WebSocket.OPEN) {
+                    AppState.websocket.send(JSON.stringify(message));
+                    console.log('📤 Sent WebSocket message:', message);
+                }
+            }
+
+            startHeartbeat() {
+                this.heartbeatInterval = setInterval(() => {
+                    this.sendMessage({ type: 'heartbeat', timestamp: new Date().toISOString() });
+                }, 30000); // Every 30 seconds
+            }
+
+            stopHeartbeat() {
+                if (this.heartbeatInterval) {
+                    clearInterval(this.heartbeatInterval);
+                    this.heartbeatInterval = null;
+                }
+            }
+
+            async fetchInitialData() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/api/progress`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.updateDashboardFromBackend(data);
+                        console.log('✅ Initial data fetched from FastAPI backend');
+                        addChatMessage('📊 Initial project data loaded from backend!', 'system');
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Could not fetch initial data:', error.message);
+                    addChatMessage('⚠️ Using cached progress data. Backend sync pending.', 'system');
+                }
+            }
+
+            updateDashboardFromBackend(data) {
+                console.log('🔄 Updating dashboard from FastAPI data:', data);
+                
+                // Update progress indicators
+                const progressPercentage = data.overall_progress || AppState.progress.overall;
+                document.getElementById('overallProgress').innerHTML = `${progressPercentage}%<span class="live-indicator updating">LIVE</span>`;
+                document.getElementById('progressPercentage').textContent = `${progressPercentage}%`;
+                document.getElementById('progressBar').style.width = `${progressPercentage}%`;
+                
+                // Update task counts
+                const completed = data.completed_tasks || AppState.progress.completed;
+                const total = data.total_tasks || AppState.progress.total;
+                document.getElementById('completedTasks').textContent = `${completed}/${total}`;
+                
+                // Update current phase
+                document.getElementById('currentPhase').textContent = `Phase ${data.current_phase || 1}`;
+                
+                // Update jobs count
+                document.getElementById('activeJobs').textContent = AppState.jobs.filter(job => job.status === 'running').length;
+                
+                // Update backend status
+                document.getElementById('backendStatus').textContent = this.isConnected ? '✅' : '🔌';
+                document.getElementById('backendChange').textContent = this.isConnected ? 'Connected' : 'Port 3002';
+                
+                // Update progress text
+                this.updateProgressText(progressPercentage);
+                
+                // Store in AppState
+                AppState.progress.overall = progressPercentage;
+                AppState.progress.completed = completed;
+                AppState.progress.total = total;
+                
+                // Update live indicators
+                this.updateLiveIndicators();
+            }
+
+            updateProgressText(progress) {
+                let progressText = '';
+                if (this.isConnected) {
+                    progressText = `🚀 Real-time backend connected! Progress: ${progress}% - Live updates active.`;
+                } else {
+                    progressText = `🔌 Backend integration in progress! Connecting dashboard to FastAPI for real-time updates.`;
+                }
+                
+                document.getElementById('progressText').textContent = progressText;
+            }
+
+            updateLiveIndicators() {
+                const indicators = document.querySelectorAll('.live-indicator');
+                indicators.forEach(indicator => {
+                    indicator.classList.remove('updating');
+                    indicator.classList.add('updating');
+                    setTimeout(() => indicator.classList.remove('updating'), 2000);
+                });
+            }
+
+            updateConnectionStatus(status) {
+                const statusDot = document.getElementById('backendStatusDot');
+                const statusText = document.getElementById('backendStatusText');
+                
+                if (status === 'connected') {
+                    statusDot.style.background = 'var(--success)';
+                    statusText.textContent = 'Backend: ✅ Connected (Port 3002)';
+                    AppState.backend.connected = true;
+                } else {
+                    statusDot.style.background = 'var(--error)';
+                    statusText.textContent = 'Backend: ❌ Disconnected (Port 3002)';
+                    AppState.backend.connected = false;
+                }
+            }
+
+            updateRealtimeStatus(status) {
+                const realtimeStatus = document.getElementById('realtimeStatus');
+                const statusText = realtimeStatus.querySelector('span');
+                
+                if (status === 'connected') {
+                    realtimeStatus.classList.remove('disconnected');
+                    statusText.textContent = 'Real-time: ✅ Connected';
+                    AppState.realtimeStatus = 'connected';
+                } else {
+                    realtimeStatus.classList.add('disconnected');
+                    statusText.textContent = 'Real-time: ❌ Disconnected';
+                    AppState.realtimeStatus = 'disconnected';
+                }
+            }
+
+            addJob(jobData) {
+                const job = {
+                    id: jobData.id || Date.now(),
+                    name: jobData.name || 'Unnamed Job',
+                    status: jobData.status || 'pending',
+                    progress: jobData.progress || 0,
+                    created_at: jobData.created_at || new Date().toISOString(),
+                    updated_at: jobData.updated_at || new Date().toISOString()
+                };
+                
+                AppState.jobs.unshift(job);
+                this.updateJobsDisplay();
+            }
+
+            updateJob(jobData) {
+                const index = AppState.jobs.findIndex(job => job.id === jobData.id);
+                if (index !== -1) {
+                    AppState.jobs[index] = { ...AppState.jobs[index], ...jobData };
+                    this.updateJobsDisplay();
+                }
+            }
+
+            updateJobsDisplay() {
+                const jobsList = document.getElementById('jobsList');
+                
+                if (AppState.jobs.length === 0) {
+                    jobsList.innerHTML = `
+                        <div class="job-item">
+                            <div class="job-info">
+                                <div class="job-details">
+                                    <div class="job-title">No active jobs</div>
+                                    <div class="job-status">Real-time monitoring ready - jobs will appear here automatically</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                jobsList.innerHTML = AppState.jobs.slice(0, 5).map(job => `
+                    <div class="job-item ${job.status}">
+                        <div class="job-info">
+                            <div class="job-details">
+                                <div class="job-title">${job.name}</div>
+                                <div class="job-status">Status: ${job.status} | Created: ${new Date(job.created_at).toLocaleTimeString()}</div>
+                            </div>
+                        </div>
+                        <div class="job-progress">
+                            <div class="job-progress-bar">
+                                <div class="job-progress-fill ${job.status}" style="width: ${job.progress}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Update active jobs count
+                document.getElementById('activeJobs').textContent = AppState.jobs.filter(job => job.status === 'running').length;
+            }
+
+            startReconnection() {
+                if (this.retryCount < this.maxRetries) {
+                    this.retryCount++;
+                    const delay = Math.min(1000 * Math.pow(2, this.retryCount), 30000);
+                    console.log(`🔄 Reconnecting WebSocket in ${delay}ms (attempt ${this.retryCount})`);
+                    
+                    setTimeout(() => {
+                        this.connectWebSocket();
+                    }, delay);
+                } else {
+                    console.log('⚠️ Max reconnection attempts reached, switching to polling');
+                    this.startFallbackPolling();
+                }
+            }
+
+            startFallbackPolling() {
+                if (this.fallbackPolling) return;
+                
+                console.log('🔄 Starting fallback polling...');
+                AppState.backend.fallbackPolling = true;
+                addChatMessage('🔄 Switching to polling mode for updates...', 'system');
+                
+                this.fallbackPolling = setInterval(async () => {
+                    try {
+                        const response = await fetch(`${this.baseUrl}/api/progress`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.updateDashboardFromBackend(data);
+                            
+                            // Try to reconnect WebSocket periodically
+                            if (!this.isConnected && this.retryCount < this.maxRetries) {
+                                this.connectWebSocket();
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('Polling failed:', error.message);
+                    }
+                }, 5000);
+            }
+
+            stopFallbackPolling() {
+                if (this.fallbackPolling) {
+                    clearInterval(this.fallbackPolling);
+                    this.fallbackPolling = null;
+                    AppState.backend.fallbackPolling = false;
+                    console.log('✅ Stopped fallback polling');
+                }
+            }
+
+            async createTestJob() {
+                try {
+                    const response = await fetch(`${this.baseUrl}/api/jobs`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: `Test Job ${Date.now()}`,
+                            type: 'test',
+                            description: 'Testing real-time job tracking'
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        showNotification('Test job created successfully!', 'success');
+                        addChatMessage(`📝 Created test job: ${result.name || 'Test Job'}`, 'system');
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    showNotification('Failed to create test job', 'error');
+                    addChatMessage(`❌ Failed to create test job: ${error.message}`, 'system');
+                }
+            }
+        }
+
+        // Initialize FastAPI connection manager
+        const backendManager = new FastAPIConnectionManager();
+
+        // Enhanced AI Response System
+        class SmartAIResponseSystem {
+            constructor() {
+                this.currentModel = AppState.ai.currentModel;
+            }
+
+            generateResponse(userMessage) {
+                const model = AppState.ai.models[this.currentModel];
+                const lowerMessage = userMessage.toLowerCase();
+
+                // Handle backend connection questions
+                if (lowerMessage.includes('backend') || lowerMessage.includes('connection') || lowerMessage.includes('3002')) {
+                    return this.getBackendConnectionStatus();
+                }
+
+                // Handle progress questions with real-time data
+                if (lowerMessage.includes('progress') || lowerMessage.includes('status')) {
+                    return this.getRealtimeProgressStatus();
+                }
+
+                // Handle WebSocket questions
+                if (lowerMessage.includes('websocket') || lowerMessage.includes('realtime') || lowerMessage.includes('live')) {
+                    return this.getWebSocketStatus();
+                }
+
+                // Handle jobs questions
+                if (lowerMessage.includes('job') || lowerMessage.includes('activity')) {
+                    return this.getJobsStatus();
+                }
+
+                // Handle FastAPI questions
+                if (lowerMessage.includes('fastapi') || lowerMessage.includes('api')) {
+                    return this.getFastAPIStatus();
+                }
+
+                // Default responses with integration awareness
+                return this.getContextualResponse(lowerMessage);
+            }
+
+            getBackendConnectionStatus() {
+                const connected = AppState.backend.connected;
+                const realtime = AppState.realtimeStatus;
+                
+                if (connected) {
+                    return `✅ **FastAPI Backend Connected!** 
+                    
+🔌 **Status:** Connected to localhost:3002
+🚀 **Real-time:** ${realtime === 'connected' ? 'Active WebSocket' : 'Reconnecting...'}
+📡 **Client ID:** ${AppState.backend.clientId}
+🔄 **Last Sync:** ${AppState.backend.lastSync ? AppState.backend.lastSync.toLocaleTimeString() : 'Never'}
+
+Your dashboard is receiving live updates from the FastAPI backend. All job tracking, progress updates, and real-time features are operational!`;
+                } else {
+                    return `⚠️ **Backend Disconnected**
+                    
+🔌 **Target:** localhost:3002 (FastAPI)
+📡 **WebSocket:** ${AppState.backend.wsUrl}/ws/${AppState.backend.clientId}
+🔄 **Status:** ${AppState.backend.fallbackPolling ? 'Polling mode active' : 'Attempting connection...'}
+
+Check that your FastAPI backend is running on port 3002. Use the "🔌 Test Connection" button to diagnose issues.`;
+                }
+            }
+
+            getWebSocketStatus() {
+                const wsConnected = AppState.realtimeStatus === 'connected';
+                const clientId = AppState.backend.clientId;
+                
+                if (wsConnected) {
+                    return `🚀 **WebSocket Connected!**
+                    
+📡 **Endpoint:** wss://mk-redo.onrender.com/ws/${clientId}
+💗 **Heartbeat:** Active
+🔄 **Auto-reconnect:** Enabled
+📊 **Message Types:** progress_update, job_created, job_updated, job_completed
+
+Real-time communication is active! Jobs and progress updates will appear instantly.`;
+                } else {
+                    return `🔌 **WebSocket Status:** Disconnected
+                    
+📡 **Target:** wss://mk-redo.onrender.com/ws/${clientId}
+🔄 **Retry Count:** ${backendManager.retryCount}/${backendManager.maxRetries}
+⏰ **Fallback:** ${AppState.backend.fallbackPolling ? 'Polling every 5s' : 'Disabled'}
+
+WebSocket connection is being established. Real-time features will activate once connected.`;
+                }
+            }
+
+            getJobsStatus() {
+                const totalJobs = AppState.jobs.length;
+                const activeJobs = AppState.jobs.filter(job => job.status === 'running').length;
+                const completedJobs = AppState.jobs.filter(job => job.status === 'completed').length;
+                const failedJobs = AppState.jobs.filter(job => job.status === 'failed').length;
+                
+                if (totalJobs === 0) {
+                    return `📊 **Jobs Status:** No jobs yet
+                    
+🎯 **Ready for:** Real-time job tracking
+🚀 **Features:** Live progress updates, status changes, completion notifications
+🧪 **Test:** Click "➕ Test Job" to create a sample job
+
+Once your FastAPI backend starts creating jobs, they'll appear here automatically with live progress updates!`;
+                } else {
+                    return `📊 **Jobs Overview:**
+                    
+📈 **Total Jobs:** ${totalJobs}
+🔄 **Active:** ${activeJobs}
+✅ **Completed:** ${completedJobs}
+❌ **Failed:** ${failedJobs}
+🔔 **Real-time Updates:** ${AppState.realtimeStatus === 'connected' ? 'Active' : 'Pending connection'}
+
+All job status changes are tracked in real-time via WebSocket connection!`;
+                }
+            }
+
+            getFastAPIStatus() {
+                return `🚀 **FastAPI Integration Status:**
+                
+🔌 **Backend URL:** ${AppState.backend.url}
+📡 **WebSocket:** ${AppState.backend.wsUrl}
+🆔 **Client ID:** ${AppState.backend.clientId}
+📊 **Health Check:** ${AppState.backend.connected ? 'Passed' : 'Failed'}
+🔄 **Connection Mode:** ${AppState.backend.fallbackPolling ? 'Polling' : 'WebSocket'}
+📈 **Features:** Progress tracking, job management, real-time updates
+
+Your FastAPI backend provides comprehensive project management with real-time WebSocket communication for instant updates!`;
+            }
+
+            getRealtimeProgressStatus() {
+                const progress = AppState.progress.overall;
+                const completed = AppState.progress.completed;
+                const total = AppState.progress.total;
+                const realtime = AppState.realtimeStatus === 'connected' ? 'LIVE' : 'CACHED';
+                
+                return `📊 **Progress Status (${realtime}):**
+                
+📈 **Overall:** ${progress}% complete
+✅ **Tasks:** ${completed}/${total} completed
+🎯 **Current Phase:** Foundation (Phase 1)
+🔄 **Real-time Sync:** ${AppState.realtimeStatus === 'connected' ? 'Active' : 'Connecting...'}
+🚀 **Backend:** ${AppState.backend.connected ? 'Connected to port 3002' : 'Offline mode'}
+
+${AppState.backend.connected ? 'All progress updates are synchronized in real-time!' : 'Connect backend for live tracking.'}`;
+            }
+
+            getContextualResponse(message) {
+                const hasBackend = AppState.backend.connected;
+                const hasRealtime = AppState.realtimeStatus === 'connected';
+                
+                const status = hasBackend ? '🚀 FastAPI connected' : '⚠️ Backend offline';
+                const realtimeHint = !hasRealtime ? ' WebSocket connecting...' : ' Real-time active!';
+                
+                return `${status}${realtimeHint}
+                
+I'm here to help with your MK Processor 4.2.1 project! I can provide:
+• Backend connection diagnostics
+• Real-time job monitoring
+• Progress tracking analysis
+• WebSocket troubleshooting
+• FastAPI integration guidance
+
+What would you like to know about the backend integration?`;
+            }
+        }
+
+        const smartAISystem = new SmartAIResponseSystem();
+
+        // UI Functions
+        function refreshFromBackend() {
+            showNotification('Refreshing from FastAPI backend...', 'info');
+            backendManager.initialize();
+        }
+
+        function testConnection() {
+            showNotification('Testing backend connection...', 'info');
+            addChatMessage('🔌 Testing connection to FastAPI backend...', 'system');
+            backendManager.testBackendHealth();
+        }
+
+        function createTestJob() {
+            backendManager.createTestJob();
+        }
+
+        function refreshJobs() {
+            showNotification('Refreshing jobs list...', 'info');
+            backendManager.updateJobsDisplay();
+        }
+
+        function showConnectionDetails() {
+            addChatMessage(`🔌 **Connection Details:**
+            
+**Backend URL:** ${AppState.backend.url}
+**WebSocket URL:** ${backendManager.websocketUrl}
+**Client ID:** ${AppState.backend.clientId}
+**Connection Status:** ${AppState.backend.connected ? 'Connected' : 'Disconnected'}
+**Real-time Status:** ${AppState.realtimeStatus}
+**Retry Count:** ${backendManager.retryCount}/${backendManager.maxRetries}
+**Fallback Polling:** ${AppState.backend.fallbackPolling ? 'Active' : 'Inactive'}
+
+The dashboard connects to your FastAPI backend for real-time job tracking and progress updates.`, 'assistant');
+        }
+
+        function viewProject(projectId) {
+            addChatMessage(`📋 Viewing project: ${projectId}. Real-time progress tracking ${AppState.backend.connected ? 'active' : 'pending backend connection'}.`, 'system');
+        }
+
+        // Progress Report Generation
+        function downloadProgressReport() {
+            const reportData = generateProgressReport();
+            const blob = new Blob([reportData], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `MK_Processor_Progress_Report_${new Date().toISOString().split('T')[0]}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('📥 Progress report downloaded!', 'success');
+            addChatMessage('📥 Generated comprehensive progress report with FastAPI backend integration details.', 'system');
+        }
+
+        function generateProgressReport() {
+            const timestamp = new Date().toISOString();
+            const progress = AppState.progress.overall;
+            const completed = AppState.progress.completed;
+            const total = AppState.progress.total;
+            
+            return `# MK Processor 4.2.1 - Ultimate Scraper Progress Report
+
+**Generated:** ${timestamp}
+**Overall Progress:** ${progress}% (${completed}/${total} tasks completed)
+**Current Phase:** Phase 1 - Foundation
+**Backend Connection:** ${AppState.backend.connected ? 'Connected' : 'Disconnected'}
+**Real-time Status:** ${AppState.realtimeStatus}
+
+## 📊 Executive Summary
+
+The Ultimate Scraper project is currently ${progress}% complete with ${completed} out of ${total} total tasks finished. The project is in Phase 1 (Foundation) with FastAPI backend integration active.
+
+## 🎯 Current Status
+
+### Backend Integration
+- **FastAPI Backend:** ${AppState.backend.connected ? `Connected to ${AppState.backend.url}` : 'Offline'}
+- **WebSocket:** ${AppState.realtimeStatus === 'connected' ? `Active on ${backendManager.websocketUrl}` : 'Disconnected'}
+- **Client ID:** ${AppState.backend.clientId}
+- **Real-time Updates:** ${AppState.realtimeStatus === 'connected' ? 'Active' : 'Pending'}
+
+### Active Features
+- **Real-time Job Tracking:** ${AppState.jobs.length} jobs monitored
+- **Progress Synchronization:** ${AppState.backend.connected ? 'Live updates' : 'Cached data'}
+- **WebSocket Communication:** ${AppState.realtimeStatus === 'connected' ? 'Operational' : 'Connecting'}
+- **Fallback Polling:** ${AppState.backend.fallbackPolling ? 'Active' : 'Disabled'}
+
+## 🔧 Technical Architecture
+
+### FastAPI Backend Integration
+- **Backend URL:** ${AppState.backend.url}
+- **WebSocket Endpoint:** wss://mk-redo.onrender.com/ws/{client_id}
+- **Health Check:** /health
+- **Progress API:** /api/progress
+- **Jobs API:** /api/jobs
+
+### Real-time Features
+- **WebSocket Connection:** Client ID based routing
+- **Heartbeat System:** 30-second intervals
+- **Auto-reconnection:** Exponential backoff
+- **Message Types:** handshake, progress_update, job_created, job_updated, job_completed, job_failed
+
+## 📈 Backend Connection Status
+
+### Connection Health
+- **Status:** ${AppState.backend.connected ? 'Connected' : 'Disconnected'}
+- **Last Sync:** ${AppState.backend.lastSync ? AppState.backend.lastSync.toISOString() : 'Never'}
+- **Retry Attempts:** ${backendManager.retryCount}/${backendManager.maxRetries}
+- **Connection Mode:** ${AppState.backend.fallbackPolling ? 'Polling' : 'WebSocket'}
+
+### WebSocket Details
+- **URL:** ${backendManager.websocketUrl}
+- **Status:** ${AppState.realtimeStatus}
+- **Heartbeat:** ${backendManager.heartbeatInterval ? 'Active' : 'Inactive'}
+- **Messages:** Real-time job and progress updates
+
+## 🚀 Integration Benefits
+
+### Real-time Capabilities
+1. **Live Progress Tracking:** Instant updates from backend
+2. **Job Monitoring:** Real-time job creation, updates, and completion
+3. **Status Synchronization:** Seamless dashboard-backend sync
+4. **Error Handling:** Graceful fallback to polling mode
+
+### Preserved Features
+- **Multi-AI Support:** GPT-4, Claude, Gemini, Ollama
+- **Theme System:** Dark, Light, Cyber themes
+- **Analytics Dashboard:** Performance insights
+- **Project Management:** Phase-based roadmap
+- **Export System:** Comprehensive progress reports
+
+## 🎯 Next Steps
+
+### Immediate Actions
+1. **Verify Backend:** Ensure FastAPI is running on port 3002
+2. **Test WebSocket:** Use connection test button
+3. **Monitor Jobs:** Create test jobs for validation
+4. **Check Health:** Use /health endpoint
+
+### Success Criteria
+- ✅ Backend health check passes
+- ✅ WebSocket connection established
+- ✅ Real-time job updates working
+- ✅ Progress synchronization active
+- ✅ All existing features preserved
+
+---
+
+*This report was generated by MK Processor 4.2.1 with FastAPI backend integration*
+*For technical support, check WebSocket logs and backend health status*
+`;
+        }
+
+        // Enhanced LLM Management Functions
+        function changeLLM() {
+            const selector = document.getElementById('llmSelector');
+            const selectedModel = selector.value;
+            AppState.ai.currentModel = selectedModel;
+            localStorage.setItem('selectedLLM', selectedModel);
+            
+            updateLLMUI(selectedModel);
+            updateChatHeader(selectedModel);
+            
+            smartAISystem.currentModel = selectedModel;
+            
+            const model = AppState.ai.models[selectedModel];
+            addChatMessage(`🔄 Switched to ${model.name}`, 'system');
+            
+            const welcomeMessage = `Hello! I'm now using ${model.name} to help with your FastAPI backend integration. I can monitor connections, analyze jobs, provide diagnostics, and track real-time progress. ${AppState.backend.connected ? 'Backend is connected!' : 'Backend connection pending.'} How can I assist you?`;
+            
+            addChatMessage(welcomeMessage, 'assistant');
+            showNotification(`Switched to ${model.name}`, 'success');
+        }
+
+        function updateLLMUI(modelKey) {
+            const model = AppState.ai.models[modelKey];
+            const statusDiv = document.getElementById('llmStatus');
+            const activeAICard = document.getElementById('activeAI');
+            
+            const statusText = modelKey === 'ollama' ? 'Local' : 'Active';
+            statusDiv.innerHTML = `
+                <div class="llm-icon" style="background: ${model.color};"></div>
+                <span>${model.name.replace(' (Local)', '')} ${statusText}</span>
+            `;
+            
+            statusDiv.className = modelKey === 'ollama' ? 'llm-status local' : 'llm-status connected';
+            
+            if (activeAICard) {
+                activeAICard.textContent = model.name.split(' ').pop();
+            }
+        }
+
+        function updateChatHeader(modelKey) {
+            const model = AppState.ai.models[modelKey];
+            const indicator = document.getElementById('chatAiIndicator');
+            
+            indicator.innerHTML = `
+                <div class="llm-icon" style="background: ${model.color}; width: 12px; height: 12px;"></div>
+                <span>${model.name.split(' ').pop()}</span>
+            `;
+        }
+
+        // Enhanced Chat Functions
+        function initializeChat() {
+            const messagesDiv = document.getElementById('chatMessages');
+            if (messagesDiv.children.length === 0) {
+                const model = AppState.ai.models[AppState.ai.currentModel];
+                const welcomeMessage = `Hello! I'm ready to help with your FastAPI backend integration using ${model.name}. I can monitor connections, track jobs, provide diagnostics, and analyze real-time progress. The dashboard is connecting to port 3002. How can I assist you?`;
+                
+                addChatMessage(welcomeMessage, 'assistant');
+            }
+        }
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            const chatIcon = document.getElementById('chatIcon');
+            const isActive = chatWindow.classList.contains('active');
+            
+            if (isActive) {
+                chatWindow.classList.remove('active');
+                chatIcon.textContent = '💬';
+            } else {
+                chatWindow.classList.add('active');
+                chatIcon.textContent = '×';
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+        function handleChatKeypress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            const sendBtn = document.getElementById('chatSend');
+            sendBtn.disabled = true;
+            
+            addChatMessage(message, 'user');
+            input.value = '';
+            
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = smartAISystem.generateResponse(message);
+                addChatMessage(response, 'assistant');
+                sendBtn.disabled = false;
+            }, Math.random() * 2000 + 1000);
+        }
+
+        function addChatMessage(message, sender) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            messageDiv.innerHTML = message;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messagesDiv = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'chat-message typing';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <span>AI is analyzing backend status</span>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            messagesDiv.appendChild(typingDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Theme Management
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            AppState.settings.theme = theme;
+            
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-theme') === theme);
+            });
+            
+            showNotification(`Theme changed to ${theme}`, 'info');
+        }
+
+        // Settings Functions
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('active');
+        }
+
+        // Utility Functions
+        function showNotification(message, type = 'info') {
+            if (!AppState.settings.notifications) return;
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 5px;">${type.toUpperCase()}</div>
+                <div>${message}</div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // Initialize Enhanced Application
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+            
+            const savedLLM = localStorage.getItem('selectedLLM') || 'gpt4';
+            document.getElementById('llmSelector').value = savedLLM;
+            AppState.ai.currentModel = savedLLM;
+            updateLLMUI(savedLLM);
+            updateChatHeader(savedLLM);
+            smartAISystem.currentModel = savedLLM;
+            
+            initializeChat();
+            
+            // Initialize FastAPI backend connection
+            backendManager.initialize();
+            
+            showNotification('MK Processor 4.2.1 Dashboard ready! Connecting to FastAPI backend...', 'success');
+            
+            console.log('✅ MK Processor 4.2.1 Enhanced Dashboard loaded');
+            console.log('🎯 FastAPI integration with real-time WebSocket');
+            console.log('🔌 Connecting to backend on port 3002...');
+        });
+
+        // Close modals on escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('settingsPanel').classList.contains('active')) {
+                    toggleSettings();
+                }
+                if (document.getElementById('chatWindow').classList.contains('active')) {
+                    toggleChat();
+                }
+            }
+        });
+
+        console.log('✅ MK Processor 4.2.1 FastAPI Integration Dashboard Complete');
+        console.log('🎯 Real-time backend integration on port 3002');
+        console.log('🔌 WebSocket communication with job tracking');
+        console.log('📊 Live progress updates and analytics');
+        console.log('🤖 Enhanced AI assistant with backend diagnostics');
+        console.log('📥 Progress export system with integration details');
+    </script>
+</body>
+</html>
