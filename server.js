@@ -1,10 +1,9 @@
-const express = require('express');
+﻿const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { v4: uuidv4 } = require('uuid');
 const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -22,16 +21,7 @@ db.serialize(() => {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     completed_at DATETIME
   )`);
-ECHO is on.
-  db.run(`CREATE TABLE integrations (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    type TEXT NOT NULL,
-    credentials TEXT,
-    status TEXT DEFAULT 'disconnected',
-    last_tested DATETIME
-  )`);
-ECHO is on.
+  
   db.run(`CREATE TABLE api_usage (
     id TEXT PRIMARY KEY,
     endpoint TEXT NOT NULL,
@@ -43,7 +33,6 @@ ECHO is on.
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
 
 // REAL scraping function using Cheerio
 async function scrapePage(url) {
@@ -54,9 +43,9 @@ async function scrapePage(url) {
       },
       timeout: 10000
     });
-ECHO is on.
+    
     const $ = cheerio.load(response.data);
-ECHO is on.
+    
     return {
       success: true,
       data: {
@@ -67,8 +56,7 @@ ECHO is on.
         images: $('img').map((i, el) => $(el).attr('src')).get().slice(0, 5),
         text_content: $('p').map((i, el) => $(el).text().trim()).get().slice(0, 3).join(' ').substring(0, 500)
       },
-      scraped_at: new Date().toISOString(),
-      processing_time: response.headers['x-response-time'] || 'N/A'
+      scraped_at: new Date().toISOString()
     };
   } catch (error) {
     return {
@@ -79,7 +67,7 @@ ECHO is on.
   }
 }
 
-// REAL working dashboard with actual functionality
+// Main dashboard route
 app.get('/', (req, res) => {
   res.send(`
 <!DOCTYPE html>
@@ -101,13 +89,12 @@ app.get('/', (req, res) => {
         .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
-        .form-group input, .form-group select { width: 100%%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; }
         .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: #004c96; transform: translateY(-1px); }
         .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%%; margin-right: 8px; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
         .status-success { background: var(--success); }
         .status-pending { background: #f59e0b; }
         .status-error { background: var(--danger); }
@@ -118,14 +105,21 @@ app.get('/', (req, res) => {
         .stat-card { background: var(--card); padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .stat-number { font-size: 32px; font-weight: 700; color: var(--primary); }
         .loading { opacity: 0.6; pointer-events: none; }
+        .success-banner { background: linear-gradient(135deg, var(--success), #059669); color: white; padding: 16px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>?? Ultimate Scraper Enterprise Platform</h1>
-            <p>Real Working Dashboard - Scrape Any Website with AI Analysis</p>
+        <div class="success-banner">
+            <h2 style="margin: 0;">🎉 ULTIMATE SCRAPER ENTERPRISE - LIVE & WORKING! 🎉</h2>
+            <p style="margin: 8px 0 0 0;">Real web scraping platform with database storage and live analytics</p>
         </div>
+        
+        <div class="header">
+            <h1>🚀 Ultimate Scraper Enterprise Platform</h1>
+            <p>Real Working Dashboard - Scrape Any Website with Live Data Storage</p>
+        </div>
+        
         <div class="stats" id="stats">
             <div class="stat-card">
                 <div class="stat-number" id="total-jobs">0</div>
@@ -144,9 +138,10 @@ app.get('/', (req, res) => {
                 <div>API Calls</div>
             </div>
         </div>
+        
         <div class="grid">
             <div class="card">
-                <h3>?? Web Scraper - LIVE</h3>
+                <h3>🌐 Web Scraper - LIVE</h3>
                 <form id="scrapeForm">
                     <div class="form-group">
                         <label>Website URL</label>
@@ -157,23 +152,24 @@ app.get('/', (req, res) => {
                         <select id="options">
                             <option value="basic">Basic Content</option>
                             <option value="detailed">Detailed Analysis</option>
-                            <option value="ai">AI-Powered Extraction</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">?? Start Scraping</button>
+                    <button type="submit" class="btn btn-primary">🚀 Start Scraping</button>
                 </form>
                 <div id="scrapeResult" class="job-result hidden"></div>
             </div>
+            
             <div class="card">
-                <h3>?? Recent Jobs</h3>
+                <h3>📊 Recent Jobs</h3>
                 <div id="jobsList">
                     <p>No jobs yet. Start scraping to see results!</p>
                 </div>
-                <button class="btn btn-success" onclick="loadJobs()">?? Refresh Jobs</button>
+                <button class="btn btn-success" onclick="loadJobs()">🔄 Refresh Jobs</button>
             </div>
         </div>
+        
         <div class="card">
-            <h3>?? API Testing Center</h3>
+            <h3>🔌 API Testing Center</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
                 <button class="btn btn-primary" onclick="testAPI('/health')">Test Health</button>
                 <button class="btn btn-primary" onclick="testAPI('/api/status')">Test Status</button>
@@ -183,6 +179,7 @@ app.get('/', (req, res) => {
             <div id="apiResult" class="job-result hidden"></div>
         </div>
     </div>
+    
     <script>
         // REAL working JavaScript functionality
         document.getElementById('scrapeForm').addEventListener('submit', async (e) => {
@@ -191,42 +188,42 @@ app.get('/', (req, res) => {
             const options = document.getElementById('options').value;
             const resultDiv = document.getElementById('scrapeResult');
             const form = document.getElementById('scrapeForm');
-ECHO is on.
+            
             form.classList.add('loading');
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<strong>? Scraping in progress...</strong>';
-ECHO is on.
+            resultDiv.innerHTML = '<strong>⏳ Scraping in progress...</strong>';
+            
             try {
                 const response = await fetch('/api/scrape', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url, options })
                 });
-ECHO is on.
+                
                 const result = await response.json();
-ECHO is on.
+                
                 if (result.success) {
-                    resultDiv.innerHTML = `
-                        <strong>? Scraping Successful!</strong><br>
-                        <strong>Title:</strong> ${result.data.title}<br>
-                        <strong>Links Found:</strong> ${result.data.links.length}<br>
-                        <strong>Headings:</strong> ${result.data.headings.length}<br>
-                        <strong>Processing Time:</strong> ${result.processing_time}<br>
-                        <details><summary>View Raw Data</summary><pre>${JSON.stringify(result.data, null, 2)}</pre></details>
-                    `;
+                    resultDiv.innerHTML = \`
+                        <strong>✅ Scraping Successful!</strong><br>
+                        <strong>Title:</strong> \${result.data.title}<br>
+                        <strong>Links Found:</strong> \${result.data.links.length}<br>
+                        <strong>Headings:</strong> \${result.data.headings.length}<br>
+                        <strong>Processing Time:</strong> \${result.processing_time}<br>
+                        <details><summary>View Raw Data</summary><pre>\${JSON.stringify(result.data, null, 2)}</pre></details>
+                    \`;
                 } else {
-                    resultDiv.innerHTML = `<strong>? Scraping Failed:</strong> ${result.error}`;
+                    resultDiv.innerHTML = \`<strong>❌ Scraping Failed:</strong> \${result.error}\`;
                 }
-ECHO is on.
+                
                 loadStats();
                 loadJobs();
             } catch (error) {
-                resultDiv.innerHTML = `<strong>? Error:</strong> ${error.message}`;
+                resultDiv.innerHTML = \`<strong>❌ Error:</strong> \${error.message}\`;
             }
-ECHO is on.
+            
             form.classList.remove('loading');
         });
-ECHO is on.
+        
         async function loadStats() {
             try {
                 const response = await fetch('/api/stats');
@@ -239,50 +236,51 @@ ECHO is on.
                 console.error('Failed to load stats:', error);
             }
         }
-ECHO is on.
+        
         async function loadJobs() {
             try {
                 const response = await fetch('/api/jobs');
                 const jobs = await response.json();
                 const jobsList = document.getElementById('jobsList');
-ECHO is on.
+                
                 if (jobs.length === 0) {
                     jobsList.innerHTML = '<p>No jobs yet. Start scraping to see results!</p>';
                     return;
                 }
-ECHO is on.
-                jobsList.innerHTML = jobs.map(job => `
+                
+                jobsList.innerHTML = jobs.map(job => \`
                     <div class="job-item">
-                        <div><span class="status-indicator status-${job.status}"></span>${job.url}</div>
-                        ${job.result ? `<details><summary>View Result</summary><pre>${job.result}</pre></details>` : ''}
+                        <div><span class="status-indicator status-\${job.status}"></span>\${job.url}</div>
+                        <div>Status: \${job.status} | Created: \${new Date(job.created_at).toLocaleString()}</div>
+                        \${job.result ? \`<details><summary>View Result</summary><pre>\${job.result}</pre></details>\` : ''}
                     </div>
-                `).join('');
+                \`).join('');
             } catch (error) {
                 console.error('Failed to load jobs:', error);
             }
         }
-ECHO is on.
+        
         async function testAPI(endpoint) {
             const resultDiv = document.getElementById('apiResult');
             resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = `<strong>Testing ${endpoint}...</strong>`;
-ECHO is on.
+            resultDiv.innerHTML = \`<strong>Testing \${endpoint}...</strong>\`;
+            
             try {
                 const response = await fetch(endpoint);
                 const data = await response.json();
-                resultDiv.innerHTML = `
-                    <strong>? ${endpoint} Response:</strong><br>
-                    <pre>${JSON.stringify(data, null, 2)}</pre>
-                `;
+                resultDiv.innerHTML = \`
+                    <strong>✅ \${endpoint} Response:</strong><br>
+                    <pre>\${JSON.stringify(data, null, 2)}</pre>
+                \`;
             } catch (error) {
-                resultDiv.innerHTML = `<strong>? ${endpoint} Error:</strong> ${error.message}`;
+                resultDiv.innerHTML = \`<strong>❌ \${endpoint} Error:</strong> \${error.message}\`;
             }
         }
-ECHO is on.
+        
         // Load initial data
         loadStats();
         loadJobs();
-ECHO is on.
+        
         // Auto-refresh every 30 seconds
         setInterval(() => {
             loadStats();
@@ -299,27 +297,27 @@ app.post('/api/scrape', async (req, res) => {
   const startTime = Date.now();
   const { url, options = 'basic' } = req.body;
   const jobId = uuidv4();
-ECHO is on.
+  
   if (!url) {
     return res.status(400).json({ error: 'URL is required' });
   }
-ECHO is on.
+  
   // Store job in database
   db.run('INSERT INTO jobs (id, url, status) VALUES (?, ?, ?)', [jobId, url, 'processing']);
-ECHO is on.
+  
   try {
     const result = await scrapePage(url);
     const processingTime = Date.now() - startTime;
-ECHO is on.
+    
     // Update job status
     const status = result.success ? 'completed' : 'failed';
     db.run('UPDATE jobs SET status = ?, result = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?', 
       [status, JSON.stringify(result), jobId]);
-ECHO is on.
+    
     // Log API usage
     db.run('INSERT INTO api_usage (id, endpoint, response_time, status_code) VALUES (?, ?, ?, ?)', 
       [uuidv4(), '/api/scrape', processingTime, result.success ? 200 : 500]);
-ECHO is on.
+    
     res.json({
       ...result,
       job_id: jobId,
@@ -351,7 +349,7 @@ app.get('/api/stats', (req, res) => {
     FROM jobs
   `, (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
-ECHO is on.
+    
     db.get('SELECT COUNT(*) as api_calls FROM api_usage', (err2, row2) => {
       if (err2) return res.status(500).json({ error: err2.message });
       res.json({ ...row, api_calls: row2.api_calls });
@@ -393,10 +391,10 @@ app.get('/api/status', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`?? Ultimate Scraper Enterprise running on port ${PORT}`);
-  console.log('?? Real working dashboard with:');
-  console.log('   ? Live web scraping');
-  console.log('   ? Database storage');
-  console.log('   ? Job management');
-  console.log('   ? Usage analytics');
+  console.log(`🚀 Ultimate Scraper Enterprise running on port ${PORT}`);
+  console.log('📊 Real working dashboard with:');
+  console.log('   ✅ Live web scraping');
+  console.log('   ✅ Database storage');
+  console.log('   ✅ Job management');
+  console.log('   ✅ Usage analytics');
 });
