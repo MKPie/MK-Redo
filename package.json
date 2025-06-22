@@ -1,15 +1,1 @@
-{
-  "name": "ultimate-scraper-enterprise",
-  "version": "4.2.1",
-  "main": "server.js",
-  "engines": { "node": "18.x" },
-  "scripts": { "start": "node server.js" },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "axios": "^1.6.0",
-    "cheerio": "^1.0.0-rc.12",
-    "sqlite3": "^5.1.6",
-    "uuid": "^9.0.1"
-  }
-}
+{"name":"ultimate-scraper-dashboard","version":"4.2.1","main":"server.js","scripts":{"start":"node server.js"},"dependencies":{"express":"^4.18.2"}}
